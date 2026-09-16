@@ -1,44 +1,43 @@
 {
-  "name": "events-circle-main-core",
-  "version": "0.1.0",
+  "name": "events-circle",
   "private": true,
-  "type": "module",
+  "version": "0.2.0",
+  "packageManager": "pnpm@10.30.3",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "scripts": {
-    "generate": "prisma generate --schema shared/schema.prisma && prisma generate --schema modules/growth/schema.prisma",
-    "build": "tsc && node scripts/copy-clients.mjs",
-    "test": "npm run build && node --test tests/*.test.mjs",
-    "test:integration": "npm run build && node --test tests/integration.mjs",
-    "check": "npm run generate && npm test",
-    "dev:core": "tsx --env-file=.env shared/server.ts",
-    "dev:growth": "tsx --env-file=.env modules/growth/server.ts",
-    "start:core": "node dist/shared/server.js",
-    "start:growth": "node dist/modules/growth/server.js",
-    "migrate:core": "prisma migrate deploy --schema shared/schema.prisma",
-    "migrate:growth": "prisma migrate deploy --schema modules/growth/schema.prisma",
-    "keys": "node scripts/keys.mjs",
-    "context": "node scripts/export-context.mjs"
-  },
-  "dependencies": {
-    "@fastify/cors": "^11.0.0",
-    "@fastify/helmet": "^13.0.0",
-    "@fastify/rate-limit": "^10.0.0",
-    "@prisma/client": "6.19.3",
-    "fastify": "5.12.5",
-    "jose": "^6.0.0",
-    "zod": "^4.0.0"
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint . && node scripts/check-boundaries.mjs",
+    "test": "pnpm --filter @events-circle/backend test",
+    "generate": "pnpm --filter @events-circle/backend db:generate",
+    "contracts": "pnpm --filter @events-circle/backend contracts && pnpm --filter @events-circle/api-client generate",
+    "check": "pnpm lint && pnpm generate && pnpm typecheck && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev": "turbo run dev",
+    "keys": "node scripts/keys.mjs"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
-    "@electric-sql/pglite-socket": "^0.2.11",
-    "@types/node": "^22.0.0",
-    "prisma": "6.19.3",
-    "tsx": "^4.0.0",
-    "typescript": "^5.9.0"
+    "turbo": "^2.8.0",
+    "typescript": "^5.9.0",
+    "eslint": "^9.39.0",
+    "typescript-eslint": "^8.55.0",
+    "prettier": "^3.8.0",
+    "@types/node": "^22.0.0"
   },
-  "overrides": {
-    "deepmerge-ts": "8.0.0"
-  }
+  "pnpm": {
+    "overrides": {
+      "deepmerge-ts": "8.0.0"
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild"
+    ]
+  },
+  "type": "module"
 }

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": ["tsconfig.base.json"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": ["NEXT_PUBLIC_API_URL", "EXPO_PUBLIC_API_URL", "VITE_API_URL"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "cache": false
+    }
+  }
+}

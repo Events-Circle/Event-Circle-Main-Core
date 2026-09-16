@@ -1,73 +1,53 @@
-# Events Circle Main Core
+# Events Circle
 
-Backend-only foundation for the Events Circle ecosystem. Shared identity and every module backend live here; mobile/web frontends live in their own repositories.
+One TypeScript monorepo: shared Core, isolated business modules, three applications and configurable product editions. Based on **Events Circle GitHub and Code Structure** and **Events Circle Modular Ecosystem Explained**. These documents supersede the earlier backend-only/two-database scaffold.
 
-**Status: initial foundation, not a production launch or the complete Growth OS.**
+**Status: architecture foundation with working account, supplier, Presence and Leads APIs. Applications are starter shells, not completed Growth OS screens.**
 
-## Structure
+| Path                  | Responsibility                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| `apps/mobile`         | Expo / React Native supplier app                                                                 |
+| `apps/web`            | Next.js supplier and public web                                                                  |
+| `apps/admin`          | React operations app                                                                             |
+| `backend/src/common`  | Technical HTTP and database helpers                                                              |
+| `backend/src/core`    | Identity, suppliers, organizations, permissions and shared platform services                     |
+| `backend/src/modules` | Presence, Content, Promotions, Leads, Hosted Events, Insights, Circle AI, Connections/Automation |
+| `backend/prisma`      | One PostgreSQL schema, client and migration history; namespaced owned tables                     |
+| `packages`            | Typed API client, contracts, types, design tokens, validation, utilities, config and testing     |
+| `infrastructure`      | Docker and Cloudflare configuration                                                              |
+| `docs/coordination`   | Status, dependencies, API changes and decisions                                                  |
 
-| Path | Ownership |
-| --- | --- |
-| `shared/` | Core identity, sessions, profiles, preferences, consents, subscription access, notification inbox and audit records |
-| `modules/growth/` | Supplier presence and lead intake/management, with its own database |
-| `packages/contracts/` | API validation and common identity types |
-| `packages/runtime/` | HTTP security, configuration, token verification helpers; no database ownership |
-| `infra/` | Cloudflare Tunnel example |
-| `docs/` | API reference, deployment, architectural decisions and remaining scope |
-| `scripts/export-context.mjs` | Share the common backend and one selected module as development reference |
+## Local setup
 
-TypeScript / Fastify, Prisma 6, PostgreSQL, Node.js 22. Two independent processes, two clients, two migration histories. No frontends in this repository.
-
-## Local development
-
-Prerequisites: Node.js 22+, npm and Docker Compose.
+Node.js 22.12+, pnpm 10.30.3 and Docker Compose are required. Run from repository root:
 
 ```sh
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env
-npm ci
-npm run keys
-docker compose up -d --wait
-npm run generate
-npm run migrate:core
-npm run migrate:growth
-npm run build
-npm run dev:core
-# In another terminal:
-npm run dev:growth
+pnpm keys
+docker compose -f infrastructure/docker/compose.yaml up -d --wait
+pnpm generate
+pnpm --filter @events-circle/backend db:migrate
+pnpm build
+pnpm --filter @events-circle/backend dev
 ```
 
-Core runs at `http://127.0.0.1:4000`; Growth runs at `http://127.0.0.1:4001`. Both expose `/health/live` and `/health/ready`. The default database passwords are **local development values**; production setup is in [deployment](docs/deployment.md).
+In another terminal, run `pnpm --filter @events-circle/web dev`, `pnpm --filter @events-circle/admin dev`, or `pnpm --filter @events-circle/mobile dev`. API: port 4000; web: 3000; admin: 3001. The backend dev command starts the compiled API and watches source compilation. The mobile simulator needs a reachable API URL before implementing authenticated screens.
 
 ## Verify
 
 ```sh
-npm run check
-npm run test:integration
+pnpm generate
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm contracts
+pnpm build
 ```
 
-Without database URL environment variables, integration tests launch two disposable PGlite Postgres/WASM databases, apply the real SQL migrations and connect through Prisma. With both `CORE_DATABASE_URL` and `GROWTH_DATABASE_URL` set, they use those databases instead: use disposable test databases only. Native PostgreSQL tests and Docker builds also run in GitHub Actions.
+Tests use disposable PGlite PostgreSQL when `TEST_DATABASE_URL` is unset. CI applies the migration to native PostgreSQL and sets `TEST_DATABASE_URL`. Never point tests at a production database. Regenerate and commit `backend/openapi.json` and `packages/api-client/src/openapi.d.ts` together after API changes.
 
-The tests exercise passwords, token validation, forwarded-header rate-limit protection, account/session flows, public inquiry capture, cross-supplier isolation, subscription expiry and refresh-token replay revocation. Tests create synthetic records; native test databases are not wiped by the script.
+Core always loads. `EDITION=growth-os` enables the currently implemented Presence and Leads modules. `circle-presence` and `circle-leads` are foundation test compositions. `ENABLED_MODULES=` runs Core alone. Unimplemented module IDs are rejected; planned module folders do not expose placeholder APIs. Module independence tests cover each composition.
 
-## Share backend context with a new frontend repository
-
-```sh
-npm run context -- growth
-```
-
-This creates `context-export/growth/` with the shared backend, selected module, common packages and reference documentation. It excludes environment files, keys, generated clients and other modules. `CONTEXT.json` identifies the source commit. The export is **development reference**; Core remains the authoritative implementation, and the frontend calls deployed APIs. See [architecture](docs/architecture.md) before adding a new module.
-
-## Included now
-
-- Register/login with salted scrypt password hashes.
-- Ten-minute signed access tokens; 30-day, rotating refresh-token sessions. Reusing an old refresh token revokes its session family.
-- Current user/profile/preferences, session listing/revocation, consent history.
-- Read-only subscription status and server-side entitlement calculation.
-- Notification inbox/read state and audit storage; delivery is not connected yet.
-- Supplier draft/published profiles, public profile lookup, guest inquiry capture and six-stage lead management.
-- Strict request validation, bounded pagination/body sizes, rate limits, explicit CORS, security headers and private-field response filtering.
-- Independent database schemas/migrations, service Docker targets, CI and Cloudflare configuration guidance.
-
-## Next milestones
-
-Email verification/password recovery and account deletion coordination; verified billing webhooks and plan catalogue; notification delivery/outbox; supplier listings, Event Posts and Hosted Events; media storage; Circle Business Brain and approval-controlled AI; social/email/calendar integrations; promotions with spend controls; analytics and attribution. These are tracked in [architecture](docs/architecture.md). No payment, publishing, AI, email or advertising provider is activated by this commit.
+Read [architecture](docs/architecture.md), [API](docs/api.md), [deployment](docs/deployment.md), [migration](database/README.md), and [current scope](docs/coordination/PROJECT_STATUS.md). Work on feature branches and review PRs before merging. No provider credentials, ads, payments or external AI automations are activated.
