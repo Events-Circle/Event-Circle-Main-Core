@@ -1,0 +1,52 @@
+import { Global, Module, type DynamicModule } from '@nestjs/common';
+import { Database } from '../common/database.js';
+import { RUNTIME, type Runtime } from '../config/runtime.js';
+import { AuthService } from './auth/auth.service.js';
+import { AuthGuard } from './auth/auth.guard.js';
+import { AuthController } from './auth/auth.controller.js';
+import { PermissionsService } from './permissions/permissions.service.js';
+import { SuppliersService } from './suppliers/suppliers.service.js';
+import { SuppliersController } from './suppliers/suppliers.controller.js';
+import { UsersService } from './users/users.service.js';
+import { UsersController } from './users/users.controller.js';
+import { HealthController } from './health/health.controller.js';
+import { RegistryController } from './module-registry/registry.controller.js';
+import { EventsService } from './audit/events.service.js';
+import { AuditService } from './audit/audit.service.js';
+@Global()
+@Module({})
+export class CoreModule {
+  static forRoot(config: Runtime): DynamicModule {
+    return {
+      module: CoreModule,
+      providers: [
+        { provide: RUNTIME, useValue: config },
+        Database,
+        AuthService,
+        AuthGuard,
+        PermissionsService,
+        SuppliersService,
+        UsersService,
+        EventsService,
+        AuditService,
+      ],
+      controllers: [
+        AuthController,
+        SuppliersController,
+        UsersController,
+        HealthController,
+        RegistryController,
+      ],
+      exports: [
+        RUNTIME,
+        Database,
+        AuthGuard,
+        AuthService,
+        PermissionsService,
+        SuppliersService,
+        EventsService,
+        AuditService,
+      ],
+    };
+  }
+}
