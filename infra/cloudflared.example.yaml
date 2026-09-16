@@ -1,0 +1,10 @@
+# Replace tunnel UUID and hostnames after creating a Cloudflare Tunnel.
+# Run cloudflared on the API host; origins listen on loopback, with no public ports.
+tunnel: REPLACE_WITH_TUNNEL_UUID
+credentials-file: /run/secrets/cloudflare-tunnel.json
+ingress:
+  - hostname: core-api.example.com
+    service: http://127.0.0.1:4000
+  - hostname: growth-api.example.com
+    service: http://127.0.0.1:4001
+  - service: http_status:404
