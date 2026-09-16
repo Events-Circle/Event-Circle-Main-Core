@@ -1,46 +1,47 @@
-name: Core verification
+name: Monorepo CI
 on:
   push:
+    branches: [main, 'refactor/**', 'feature/**']
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     services:
-      core-db:
-        image: postgres:17-bookworm
+      postgres:
+        image: postgres:17-alpine
         env:
-          POSTGRES_USER: core
-          POSTGRES_PASSWORD: ci-core-only
-          POSTGRES_DB: core_test
-        ports: ["5432:5432"]
+          POSTGRES_USER: circle
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: events_circle_test
+        ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U core -d core_test"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-      growth-db:
-        image: postgres:17-bookworm
-        env:
-          POSTGRES_USER: growth
-          POSTGRES_PASSWORD: ci-growth-only
-          POSTGRES_DB: growth_test
-        ports: ["5433:5432"]
-        options: >-
-          --health-cmd "pg_isready -U growth -d growth_test"
-          --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -U circle -d events_circle_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      CORE_DATABASE_URL: postgresql://core:ci-core-only@localhost:5432/core_test
-      GROWTH_DATABASE_URL: postgresql://growth:ci-growth-only@localhost:5433/growth_test
+      DATABASE_URL: postgresql://circle:test-only-password@localhost:5432/events_circle_test
+      TEST_DATABASE_URL: postgresql://circle:test-only-password@localhost:5432/events_circle_test
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      EXPO_NO_TELEMETRY: '1'
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run check
-      - run: npm run migrate:core && npm run migrate:growth
-      - run: npm run test:integration
-      - run: docker build --target core -t events-circle-core:test .
-      - run: docker build --target growth -t events-circle-growth:test .
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm generate
+      - run: pnpm --filter @events-circle/backend db:migrate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm contracts
+      - run: git diff --exit-code -- backend/openapi.json packages/api-client/src/openapi.d.ts
+      - run: pnpm build
+      - run: docker build -f infrastructure/docker/backend.Dockerfile -t events-circle-api:ci .
