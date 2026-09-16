@@ -1,0 +1,8 @@
+node_modules
+dist
+generated
+.git
+.env
+.env.*
+.secrets
+context-export

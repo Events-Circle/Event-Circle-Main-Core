@@ -1,0 +1,44 @@
+{
+  "name": "events-circle-main-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "generate": "prisma generate --schema shared/schema.prisma && prisma generate --schema modules/growth/schema.prisma",
+    "build": "tsc && node scripts/copy-clients.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "test:integration": "npm run build && node --test tests/integration.mjs",
+    "check": "npm run generate && npm test",
+    "dev:core": "tsx --env-file=.env shared/server.ts",
+    "dev:growth": "tsx --env-file=.env modules/growth/server.ts",
+    "start:core": "node dist/shared/server.js",
+    "start:growth": "node dist/modules/growth/server.js",
+    "migrate:core": "prisma migrate deploy --schema shared/schema.prisma",
+    "migrate:growth": "prisma migrate deploy --schema modules/growth/schema.prisma",
+    "keys": "node scripts/keys.mjs",
+    "context": "node scripts/export-context.mjs"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@prisma/client": "6.19.3",
+    "fastify": "5.12.5",
+    "jose": "^6.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
+    "@types/node": "^22.0.0",
+    "prisma": "6.19.3",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
+  }
+}
