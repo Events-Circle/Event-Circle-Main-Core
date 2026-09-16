@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/core"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("CORE_DATABASE_URL")
+}
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique
+  passwordHash String
+  displayName String
+  locale String @default("en")
+  timezone String @default("UTC")
+  notificationPreferences Json @default("{\"email\":false,\"push\":false}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions Session[]
+  consents Consent[]
+  subscriptions Subscription[]
+  notifications Notification[]
+}
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  tokens RefreshToken[]
+  @@index([userId, revokedAt])
+}
+model RefreshToken {
+  id String @id @default(uuid()) @db.Uuid
+  sessionId String @db.Uuid
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash String @unique
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+}
+model Consent {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose String
+  version String
+  granted Boolean
+  recordedAt DateTime @default(now())
+  @@index([userId, purpose, recordedAt])
+}
+model Subscription {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planCode String
+  status String
+  provider String
+  providerReference String @unique
+  features String[]
+  startsAt DateTime
+  endsAt DateTime
+  cancelAtPeriodEnd Boolean @default(false)
+  createdAt DateTime @default(now())
+  @@index([userId, status, endsAt])
+}
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind String
+  title String
+  body String
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String? @db.Uuid
+  action String
+  targetId String?
+  createdAt DateTime @default(now())
+  @@index([actorId, createdAt])
+}
