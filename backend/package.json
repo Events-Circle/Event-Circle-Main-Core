@@ -1,0 +1,45 @@
+{
+  "name": "@events-circle/backend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch & node --env-file=../.env --watch dist/main.js",
+    "start": "node dist/main.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "node --env-file-if-exists=../.env node_modules/prisma/build/index.js migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "test": "pnpm build && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "contracts": "pnpm build && node dist/openapi.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/platform-express": "^11.1.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/throttler": "^6.4.0",
+    "@prisma/client": "6.19.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "helmet": "^8.1.0",
+    "jose": "^6.0.0",
+    "@events-circle/contracts": "workspace:*",
+    "@events-circle/types": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "6.19.3",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.0",
+    "@nestjs/testing": "^11.1.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0",
+    "tsx": "^4.21.0",
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "0.2.11"
+  }
+}

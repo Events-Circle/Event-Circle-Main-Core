@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: circle
+      POSTGRES_PASSWORD: local-development-only
+      POSTGRES_DB: events_circle
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - events-circle-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U circle -d events_circle']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  events-circle-data:

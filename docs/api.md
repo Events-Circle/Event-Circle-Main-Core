@@ -1,72 +1,27 @@
-# API contract v1
+# API foundation
 
-JSON over HTTPS in production. Supply `Authorization: Bearer <accessToken>` on authenticated requests. Request bodies reject unknown fields. Error bodies use `{ "error": "CODE", "requestId": "..." }`. Never send database credentials to frontends. Keep refresh tokens in platform secure storage; do not put them in URLs or application logs.
+Authoritative machine-readable contract: `backend/openapi.json`. Generated client: `@events-circle/api-client`. In development, Swagger is available at `/api/docs`. Default HTTP prefix: `/api/v1`.
 
-## Shared API
+| Namespace                             | Included operations                                                  |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| `/core/auth`                          | register, login, refresh, logout, JWKS                               |
+| `/core/me`                            | safe profile read/update                                             |
+| `/core/sessions`                      | list/revoke own sessions                                             |
+| `/core/consents`                      | record and read own consent history                                  |
+| `/core/subscriptions`, `/core/access` | read subscription status and effective entitlements                  |
+| `/core/memberships`                   | list own organization memberships                                    |
+| `/core/suppliers`                     | create canonical supplier/organization; read/update current supplier |
+| `/core/notifications`                 | own inbox and read state                                             |
+| `/core/modules`, `/core/health`       | module catalog, liveness/readiness                                   |
+| `/presence/profile`                   | read/upsert organization presentation                                |
+| `/presence/public/:slug`              | published public profile                                             |
+| `/leads/public/:supplierId`           | consented guest inquiry for opted-in supplier                        |
+| `/leads`, `/leads/:id/stage`          | organization lead list and stage update                              |
 
-| Method and route | Body/query | Result |
-| --- | --- | --- |
-| POST `/v1/auth/register` | `email`, `password` (12–128 characters), `displayName` | 201 token pair |
-| POST `/v1/auth/login` | `email`, `password` | 200 token pair |
-| POST `/v1/auth/refresh` | `refreshToken` | Replacement token pair; old refresh token becomes unusable |
-| POST `/v1/auth/logout` | Bearer token | 204; current session revoked |
-| GET `/v1/me` | Bearer token | Safe profile and preferences |
-| PATCH `/v1/me` | Any of `displayName`, `locale`, IANA `timezone`, `notificationPreferences: {email, push}` | Updated profile |
-| GET `/v1/access` | Bearer token | `userId`, `features[]` |
-| GET `/v1/subscriptions` | Bearer token | `items[]` of user's subscriptions, up to 100 |
-| GET `/v1/sessions` | Bearer token | `items[]` of active sessions, up to 100 |
-| DELETE `/v1/sessions/:id` | Session UUID, Bearer token | 204, only own sessions |
-| POST `/v1/consents` | `purpose`: marketing/analytics, `version`, `granted` | 201 append-only consent record |
-| GET `/v1/consents` | `limit`, `offset` | Most recent consent records first |
-| GET `/v1/notifications` | `limit`, `offset` | Notification inbox |
-| PATCH `/v1/notifications/:id/read` | Notification UUID, Bearer token | 204, only own notifications |
-| GET `/.well-known/jwks.json` | Public | Public signing key only |
+Protected requests use `Authorization: Bearer <accessToken>`. Organization-scoped operations also require `X-Organization-Id`; the server verifies membership, role and enabled-module access. Presence and Leads basic permissions are free foundation features. Subscription entitlements are read-only; users cannot grant paid access themselves.
 
-Token pair: `{ "accessToken": "...", "refreshToken": "...", "tokenType": "Bearer", "expiresIn": 600 }`.
+Access tokens expire in ten minutes. Refresh tokens rotate within a 30-day absolute session; replay revokes that session immediately. Logout checks the current session. Frontend persistent credential storage and login screens are not implemented in the starter apps.
 
-## Growth module API
+All DTOs reject unknown fields. List results are bounded to 100 for the foundation; cursor pagination is pending. Guest inquiry requires email or phone, contact consent and consent version. Source attribution is visitor-supplied metadata, not proof of an ad conversion. Public responses never include internal user/organization IDs or passwords. Errors return status and a request ID without database details.
 
-| Method and route | Access | Behavior |
-| --- | --- | --- |
-| PUT `/v1/supplier` | `growth:presence` | Create/replace your supplier presence; ownership comes from the token |
-| GET `/v1/supplier` | `growth:presence` | Your supplier or 404 |
-| GET `/v1/public/suppliers/:slug` | Public | Published profile only |
-| POST `/v1/public/suppliers/:slug/inquiries` | Public | Capture a guest inquiry for a published supplier; 201 `{received:true}` |
-| GET `/v1/leads` | `growth:leads` | Only own supplier's leads; optional `stage`, `limit`, `offset` |
-| PATCH `/v1/leads/:id` | `growth:leads` | Change own lead's stage; 204 or 404 |
-
-Supplier PUT body (full replacement):
-
-```json
-{
-  "slug": "beirut-photo-studio",
-  "businessName": "Beirut Photo Studio",
-  "description": "Wedding and event photography.",
-  "category": "Photography",
-  "city": "Beirut",
-  "serviceAreas": ["Beirut", "Mount Lebanon"],
-  "published": false
-}
-```
-
-Guest inquiry body:
-
-```json
-{
-  "name": "Prospect",
-  "email": "prospect@example.com",
-  "message": "Please send information about your wedding packages.",
-  "contactConsent": true,
-  "source": "SHARED_LINK"
-}
-```
-
-`email` or `phone` is required. Optional `campaign` is a bounded identifier. Sources: `PUBLIC_PROFILE`, `QR`, `SHARED_LINK`, `INSTAGRAM`, `FACEBOOK`, `META_ADS`. Display an inquiry-specific contact-permission notice before collecting `contactConsent`; the backend records notice identifier `inquiry-v1`.
-
-Lead stages: `NEW`, `HOT`, `FOLLOW_UP`, `QUALIFIED`, `WON`, `LOST`. PATCH body is `{ "stage": "QUALIFIED" }`. Initial stage changes are manual; there is no AI scoring/qualification engine yet.
-
-Pagination defaults to 25, maximum 100, offset maximum 10,000. Lists sort newest first with an ID tiebreaker. Page boundaries may change as new records arrive; cursor-based pagination is a future addition.
-
-Both services: GET `/health/live` checks process liveness, GET `/health/ready` checks that service's database. Neither reports provider integration health. Common status codes: 400 validation, 401 credentials/session invalid, 403 entitlement denied, 404 missing/not owned, 409 conflict, 429 rate limited, 503 Core/dependency unavailable.
-
-All responses default to `Cache-Control: no-store`. Future public caching must be deliberately limited to safe public representations.
+Basic flow: register → create Core supplier with `acceptInquiries:true` → use returned organization header to save Presence → submit guest inquiry using supplier ID → read/update Leads. Leads does not require a Presence record.

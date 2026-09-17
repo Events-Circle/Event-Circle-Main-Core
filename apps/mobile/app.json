@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "Events Circle",
+    "slug": "events-circle",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light"
+  }
+}

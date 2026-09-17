@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+node_modules
+dist
+.next
+generated
+backend/openapi.json
+packages/api-client/src/openapi.d.ts
+backend/prisma/migrations
+context-export
+apps/web/next-env.d.ts
