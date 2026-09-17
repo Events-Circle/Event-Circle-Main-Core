@@ -65,3 +65,7 @@ Automated tests cover processed image uploads (using an in-memory storage double
 Still required with real accounts: private Railway bucket creation, database connection/TLS verification, adapter upload/download smoke test, Railway health/restart verification, public web deployment, Android installation and native iPhone verification later. There are no customer records seeded. Catalog entries are initial product configuration, and test fixtures run only in disposable/CI databases.
 
 Defer to later scope: platform moderation, reviews, translated content, slug redirects, advanced contact methods, overnight/multi-interval hours, actual QR image rendering, listing/project context in Leads capture, analytics consumers and production operations. Social links and descriptions are plain content, never rendered as trusted HTML. Current opening hours support one same-day interval per weekday; timezone remains canonical account/business configuration to resolve before scheduling features.
+
+## Live staging update — 2026-09-17
+
+Railway API, PostgreSQL and private image storage are now deployed and smoke-tested. See [Railway staging verification](railway-staging-verification.md), which supersedes earlier statements here about provider setup being pending. Frontend and native-device validation remain pending.
