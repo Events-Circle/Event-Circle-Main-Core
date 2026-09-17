@@ -228,6 +228,15 @@ try {
     const subscriptions = (await api().get('/api/v1/core/subscriptions').set(auth(owner))).body;
     assert.ok(subscriptions.every((s) => !('providerReference' in s)));
   });
+  const logo = await db.coreMedia.create({
+    data: {
+      organizationId: supplier.organizationId,
+      objectKey: 'audit/logo.webp',
+      width: 1,
+      height: 1,
+      bytes: 1,
+    },
+  });
   const profile = { slug: 'audit-studio', description: 'Audit portfolio', published: false };
   await check('Presence drafts, publication and unpublication respect privacy', async () => {
     await api().put('/api/v1/presence/profile').set(scope(owner, supplier)).send(profile).expect(200);
@@ -235,7 +244,7 @@ try {
     await api()
       .put('/api/v1/presence/profile')
       .set(scope(owner, supplier))
-      .send({ ...profile, published: true })
+      .send({ ...profile, published: true, logoMediaId: logo.id })
       .expect(200);
     const published = (await api().get('/api/v1/presence/public/audit-studio').expect(200)).body;
     assert.deepEqual(Object.keys(published.supplier).sort(), [

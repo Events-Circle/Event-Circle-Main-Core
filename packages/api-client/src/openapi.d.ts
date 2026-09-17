@@ -308,6 +308,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/core/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MediaController_list"];
+        put?: never;
+        post: operations["MediaController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/core/media/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MediaController_file"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/core/catalogs/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogsController_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/core/catalogs/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogsController_locations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PresenceController_readiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/profile/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PresenceController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/profile/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PresenceController_unpublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/public/{slug}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PresenceController_share"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/presence/profile": {
         parameters: {
             query?: never;
@@ -332,6 +460,150 @@ export interface paths {
             cookie?: never;
         };
         get: operations["PresenceController_publicProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContentController_list"];
+        put?: never;
+        post: operations["ContentController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ContentController_reorder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContentController_get"];
+        put: operations["ContentController_update"];
+        post?: never;
+        delete: operations["ContentController_archive"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ContentController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}/{id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ContentController_unpublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/collections/{collection}/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ContentController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/public/{slug}/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContentController_media"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/public/{slug}/collections/{collection}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContentController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/presence/public/{slug}/collections/{collection}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContentController_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -411,6 +683,10 @@ export interface components {
             refreshToken: string;
         };
         SupplierDto: {
+            contactEmail?: string | null;
+            contactPhone?: string | null;
+            categoryId?: string;
+            locationId?: string;
             businessName: string;
             category: string;
             city: string;
@@ -418,6 +694,10 @@ export interface components {
             acceptInquiries?: Record<string, never>;
         };
         SupplierResponseDto: {
+            contactEmail: string | null;
+            contactPhone: string | null;
+            categoryId: string | null;
+            locationId: string | null;
             id: string;
             organizationId: string;
             businessName: string;
@@ -513,29 +793,200 @@ export interface components {
             implemented: boolean;
             enabled: boolean;
         };
+        MediaResponseDto: {
+            id: string;
+            width: number;
+            height: number;
+            bytes: number;
+            /** @enum {string} */
+            mimeType: "image/webp";
+            /** @enum {string} */
+            status: "READY";
+        };
+        CatalogResponseDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "CATEGORY" | "LOCATION";
+            label: string;
+            active: boolean;
+        };
+        ReadinessDto: {
+            ready: boolean;
+            missing: string[];
+            score: number;
+        };
+        VersionDto: {
+            version: number;
+        };
+        SocialLinkDto: {
+            /** @enum {string} */
+            provider: "WEBSITE" | "INSTAGRAM" | "FACEBOOK" | "TIKTOK" | "YOUTUBE" | "LINKEDIN";
+            url: string;
+        };
+        OpeningHourDto: {
+            weekday: number;
+            closed: boolean;
+            opens?: string;
+            closes?: string;
+        };
         PresenceResponseDto: {
+            showEmail?: boolean;
+            showPhone?: boolean;
             slug: string;
             description: string;
             published: boolean;
+            tagline?: string;
+            logoMediaId?: string | null;
+            coverMediaId?: string | null;
+            seoTitle?: string;
+            seoDescription?: string;
+            accentColor?: string;
+            socialLinks?: components["schemas"]["SocialLinkDto"][];
+            openingHours?: components["schemas"]["OpeningHourDto"][];
+            sections?: string[];
+            version: number;
             id: string;
             supplierId: string;
+            publishedAt: string | null;
+        };
+        ShareDto: {
+            url: string;
+            qrPayload: string;
+            title: string;
+            description: string;
         };
         PresenceDto: {
+            showEmail?: boolean;
+            showPhone?: boolean;
             slug: string;
             description: string;
             published: boolean;
+            tagline?: string;
+            logoMediaId?: string | null;
+            coverMediaId?: string | null;
+            seoTitle?: string;
+            seoDescription?: string;
+            accentColor?: string;
+            socialLinks?: components["schemas"]["SocialLinkDto"][];
+            openingHours?: components["schemas"]["OpeningHourDto"][];
+            sections?: string[];
+            version?: number;
         };
         PublicSupplierDto: {
+            contactEmail?: string;
+            contactPhone?: string;
             id: string;
             businessName: string;
             category: string;
             city: string;
             serviceAreas: string[];
         };
+        MediaReferenceDto: {
+            mediaId: string;
+            /** @enum {string} */
+            role: "COVER" | "GALLERY";
+            altText: string;
+            caption?: string;
+        };
+        PublicContentDto: {
+            id: string;
+            title: string;
+            summary: string;
+            description: string;
+            categoryId: string | null;
+            locationId: string | null;
+            occurredAt: string | null;
+            /** @enum {string|null} */
+            type: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER" | null;
+            /** @enum {string|null} */
+            pricingMode: "FIXED" | "FROM" | "ON_REQUEST" | "FREE" | null;
+            amountMinor: number | null;
+            currency: string | null;
+            validFrom: string | null;
+            validUntil: string | null;
+            serviceAreas: string[];
+            availabilityNote: string;
+            featured: boolean;
+            displayOrder: number;
+            media: components["schemas"]["MediaReferenceDto"][];
+        };
         PublicPresenceDto: {
             slug: string;
             description: string;
             supplier: components["schemas"]["PublicSupplierDto"];
+            tagline: string;
+            logoMediaId: string | null;
+            coverMediaId: string | null;
+            seoTitle: string;
+            seoDescription: string;
+            accentColor: string;
+            socialLinks: components["schemas"]["SocialLinkDto"][];
+            openingHours: components["schemas"]["OpeningHourDto"][];
+            sections: string[];
+            inquiriesEnabled: boolean;
+            /** @description API-relative Leads capture path, or null. */
+            inquiryPath: Record<string, never> | null;
+            portfolio: components["schemas"]["PublicContentDto"][];
+            listings: components["schemas"]["PublicContentDto"][];
+            gallery: components["schemas"]["PublicContentDto"][];
+        };
+        ContentResponseDto: {
+            id: string;
+            title: string;
+            summary: string;
+            description: string;
+            categoryId: string | null;
+            locationId: string | null;
+            occurredAt: string | null;
+            /** @enum {string|null} */
+            type: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER" | null;
+            /** @enum {string|null} */
+            pricingMode: "FIXED" | "FROM" | "ON_REQUEST" | "FREE" | null;
+            amountMinor: number | null;
+            currency: string | null;
+            validFrom: string | null;
+            validUntil: string | null;
+            serviceAreas: string[];
+            availabilityNote: string;
+            featured: boolean;
+            displayOrder: number;
+            media: components["schemas"]["MediaReferenceDto"][];
+            supplierId: string;
+            /** @enum {string} */
+            kind: "PORTFOLIO" | "LISTING" | "GALLERY";
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "UNPUBLISHED" | "ARCHIVED";
+            version: number;
+            createdAt: string;
+            updatedAt: string;
+            publishedAt: string | null;
+        };
+        ContentWriteDto: {
+            title: string;
+            summary?: Record<string, never>;
+            description?: Record<string, never>;
+            categoryId?: string | null;
+            locationId?: string | null;
+            occurredAt?: string | null;
+            /** @enum {string} */
+            type?: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER";
+            /** @enum {string} */
+            pricingMode?: "FIXED" | "FROM" | "ON_REQUEST" | "FREE";
+            amountMinor?: number | null;
+            currency?: string | null;
+            validFrom?: string | null;
+            validUntil?: string | null;
+            serviceAreas?: string[];
+            availabilityNote?: Record<string, never>;
+            featured?: Record<string, never>;
+            media: components["schemas"]["MediaReferenceDto"][];
+            /** @description Required when updating an existing record; stale versions return 409. */
+            version?: number;
+        };
+        ReorderDto: {
+            ids: string[];
+            /** @description Current profile version; returned by GET profile. */
+            version: number;
         };
         LeadDto: {
             name: string;
@@ -1050,6 +1501,219 @@ export interface operations {
             };
         };
     };
+    MediaController_list: {
+        parameters: {
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaResponseDto"][];
+                };
+            };
+        };
+    };
+    MediaController_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaResponseDto"];
+                };
+            };
+        };
+    };
+    MediaController_file: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
+    CatalogsController_categories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogResponseDto"][];
+                };
+            };
+        };
+    };
+    CatalogsController_locations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogResponseDto"][];
+                };
+            };
+        };
+    };
+    PresenceController_readiness: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-organization-id": string;
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadinessDto"];
+                };
+            };
+        };
+    };
+    PresenceController_publish: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-organization-id": string;
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresenceResponseDto"];
+                };
+            };
+        };
+    };
+    PresenceController_unpublish: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-organization-id": string;
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresenceResponseDto"];
+                };
+            };
+        };
+    };
+    PresenceController_share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareDto"];
+                };
+            };
+        };
+    };
     PresenceController_current: {
         parameters: {
             query?: never;
@@ -1115,6 +1779,335 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicPresenceDto"];
+                };
+            };
+        };
+    };
+    ContentController_list: {
+        parameters: {
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+                type?: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER";
+            };
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"][];
+                };
+            };
+        };
+    };
+    ContentController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentWriteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_reorder: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionDto"];
+                };
+            };
+        };
+    };
+    ContentController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentWriteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_archive: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_publish: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_unpublish: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_restore: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentResponseDto"];
+                };
+            };
+        };
+    };
+    PublicContentController_media: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
+    PublicContentController_list: {
+        parameters: {
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+                type?: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER";
+            };
+            header?: never;
+            path: {
+                slug: string;
+                collection: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicContentDto"][];
+                };
+            };
+        };
+    };
+    PublicContentController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                collection: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicContentDto"];
                 };
             };
         };

@@ -1,0 +1,27 @@
+# Railway staging and Expo/EAS setup
+
+Selected stack: Railway NestJS API, Railway PostgreSQL, Railway private Storage Bucket, Expo/EAS mobile builds. GitHub remains the code source. No live resources or account links have been created by this change.
+
+## Railway account connection (next step)
+
+1. Create a dedicated staging project, PostgreSQL service and private Storage Bucket. Connect the Main Core GitHub repository, branch main, with repository root as the build context. `railway.json` selects the backend Dockerfile and staging start command. Do not set the service root to backend. Use one API replica initially. Keep automatic deployments disabled until the first live verification passes.
+2. In the API service set `DATABASE_URL=${{Postgres.DATABASE_URL}}` using the actual database service name. Use Railway's private connection in the same environment. Do not expose the database directly to the mobile app. The migration/table-owner connection can access the RLS-protected application tables; browser roles cannot. Verify connection security and migrate deploy in the live environment; external administration connections must use verified TLS.
+3. Set `APP_STAGE=staging`, `NODE_ENV=production`, `HOST=0.0.0.0`, `EDITION=growth-os`, `ENABLED_MODULES=presence,leads`, `OUTBOX_WORKER_ENABLED=false`, `JWT_AUDIENCE=events-circle`, `JWT_KEY_ID=staging-v1`. Railway supplies PORT. Generate a Railway HTTPS domain and set JWT_ISSUER to that origin.
+4. Generate a persistent Ed25519 key pair with `pnpm keys`. Save JWT_PRIVATE_KEY_PEM and JWT_PUBLIC_KEY_PEM as server secrets with real newlines. Never commit keys, paste them into chat or regenerate them on restart. The entry point writes private temporary key files and runs committed migrations before starting NestJS. A failed migration prevents startup. This is a single-replica staging procedure, not a production migration orchestration strategy.
+5. Map bucket variables to API variables: STORAGE_URL from ENDPOINT; STORAGE_ACCESS_KEY_ID from ACCESS_KEY_ID; STORAGE_SECRET_ACCESS_KEY from SECRET_ACCESS_KEY; STORAGE_BUCKET from BUCKET (not the display name); STORAGE_REGION from REGION. Use Railway reference variables rather than copying secrets where possible. All five are required together. STORAGE_FORCE_PATH_STYLE defaults false; set true only if the bucket credentials explicitly require path-style URLs. The endpoint is an HTTPS origin without a trailing slash. Buckets remain private; Core processes images and proxies authorized reads. No storage credentials reach clients.
+6. Set CORS_ORIGINS to actual browser origins, comma separated; leave empty until a browser frontend exists. Native mobile does not require a CORS allowlist entry. Set PUBLIC_WEB_URL only when the public Presence frontend is deployed; share endpoints intentionally return 503 until then. Leave TRUST_PROXY_CIDRS empty until Railway's ingress trust boundaries are verified; do not trust arbitrary forwarding headers. Rate limiting may be shared by the proxy until configured.
+7. Deploy, verify `/api/v1/core/health/ready`, then run registration, refresh, upload/download, publication, public-image withdrawal and inquiry-to-Leads smoke tests. Restart the API and confirm saved data, images and sessions survive. Configure backups and budget alerts; the trial is usage-limited. Do not seed customer data.
+
+## Expo account connection (after backend is online)
+
+The existing `apps/mobile` is a foundation, not the Presence frontend. No separate module repository is created here. Its `eas.json` provides an internal preview APK and a production build profile; the configuration can be carried into the future module frontend repo.
+
+From apps/mobile, connect the intended Expo account/project with EAS init. Confirm the owner, project ID, unique Android package and iOS bundle identifier before saving them to app.json. These identifiers are intentionally not guessed. Set EXPO_PUBLIC_API_URL in the EAS preview environment to the verified Railway HTTPS origin (without `/api/v1`; the generated endpoint paths already include it). Only this public URL goes in the app; database, JWT signing and S3 credentials stay on Railway.
+
+Run EAS Build with the preview profile and Android platform. Install the APK on a phone: an internal preview build does not need a running laptop or Metro server. Later configure Apple signing and registered devices for iOS internal distribution after the Apple Developer account is available. iOS JS export is not a native-device test. EAS Update channels/runtime versions are not configured yet; use new builds until an intentional OTA release policy is established.
+
+## Verification boundary
+
+Automated tests exercise S3 request signing, virtual-hosted/path-style addressing, image bytes, failure redaction, tenant permissions, migrations and the Presence journey. Real Railway connectivity, bucket behavior and native EAS builds require the account connection above. Replacing the provider changes no schema or module ownership. Existing Supabase-stored assets would need a separately verified object migration; this repository has no deployed provider or customer assets to migrate.
+
+References: [Railway buckets](https://docs.railway.com/storage-buckets), [Railway PostgreSQL](https://docs.railway.com/databases/postgresql), [EAS build configuration](https://docs.expo.dev/build/eas-json/).

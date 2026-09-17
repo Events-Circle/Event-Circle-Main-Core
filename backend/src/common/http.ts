@@ -30,6 +30,12 @@ export class Errors implements ExceptionFilter {
     res.status(status).json({
       error: status === 500 ? 'INTERNAL_ERROR' : `HTTP_${status}`,
       requestId: res.getHeader('X-Request-Id'),
+      ...(error instanceof HttpException && status === 422 && typeof error.getResponse() === 'object'
+        ? {
+            code: (error.getResponse() as { code?: string }).code,
+            details: (error.getResponse() as { details?: unknown }).details,
+          }
+        : {}),
     });
   }
 }
@@ -49,7 +55,7 @@ export function configureHttp(app: INestApplication, config: Runtime) {
   app.enableCors({
     origin: config.cors,
     credentials: false,
-    exposedHeaders: ['X-Request-Id', 'X-Next-Cursor'],
+    exposedHeaders: ['X-Request-Id', 'X-Next-Cursor', 'ETag'],
   });
   app.useGlobalPipes(
     new ValidationPipe({

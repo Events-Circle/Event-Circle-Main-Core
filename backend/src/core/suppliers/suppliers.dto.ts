@@ -9,8 +9,23 @@ import {
   ArrayMaxSize,
   ValidateIf,
   IsBoolean,
+  IsUUID,
+  IsEmail,
+  IsOptional,
+  Matches,
 } from 'class-validator';
 export class SupplierDto {
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(254)
+  contactEmail?: string | null;
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @Matches(/^\+[1-9]\d{6,14}$/)
+  contactPhone?: string | null;
+  @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsUUID() categoryId?: string;
+  @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsUUID() locationId?: string;
   @ApiProperty() @Trim() @IsString() @MinLength(1) @MaxLength(160) businessName!: string;
   @ApiProperty() @Trim() @IsString() @MinLength(1) @MaxLength(100) category!: string;
   @ApiProperty() @Trim() @IsString() @MinLength(1) @MaxLength(100) city!: string;
@@ -31,6 +46,10 @@ export class SupplierDto {
     false;
 }
 export class SupplierResponseDto {
+  @ApiProperty({ nullable: true, type: String }) contactEmail!: string | null;
+  @ApiProperty({ nullable: true, type: String }) contactPhone!: string | null;
+  @ApiProperty({ nullable: true, type: String }) categoryId!: string | null;
+  @ApiProperty({ nullable: true, type: String }) locationId!: string | null;
   @ApiProperty() id!: string;
   @ApiProperty() organizationId!: string;
   @ApiProperty() businessName!: string;
@@ -41,6 +60,8 @@ export class SupplierResponseDto {
 }
 
 export class PublicSupplierDto {
+  @ApiPropertyOptional() contactEmail?: string;
+  @ApiPropertyOptional() contactPhone?: string;
   @ApiProperty() id!: string;
   @ApiProperty() businessName!: string;
   @ApiProperty() category!: string;

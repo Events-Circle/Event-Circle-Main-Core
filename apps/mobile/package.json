@@ -5,8 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "dev": "expo start",
-    "build": "expo export --platform android",
-    "typecheck": "tsc --noEmit"
+    "build": "expo export --platform all",
+    "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "pnpm --dir ../.. exec turbo run build --filter=@events-circle/mobile^..."
   },
   "dependencies": {
     "@events-circle/api-client": "workspace:*",

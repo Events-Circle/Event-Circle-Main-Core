@@ -7,6 +7,34 @@ const org = '10000000-0000-4000-8000-000000000001';
 const supplier = '10000000-0000-4000-8000-000000000002';
 const profile = '10000000-0000-4000-8000-000000000003';
 const lead = '10000000-0000-4000-8000-000000000004';
+test('Supabase browser roles cannot read application tables after the privacy migration', async () => {
+  const pg = await PGlite.create();
+  try {
+    for (const name of [
+      '202609160001_monolith',
+      '202609170001_integrity',
+      '202609170002_outbox_delivery',
+      '202609170003_presence',
+    ])
+      await pg.exec(await migration(name));
+    await pg.exec(
+      'CREATE ROLE anon; CREATE ROLE authenticated; GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;',
+    );
+    await pg.exec(await migration('202609170004_private_application_tables'));
+    for (const role of ['anon', 'authenticated']) {
+      const result = await pg.query("SELECT has_table_privilege($1,'core_users','SELECT') AS allowed", [
+        role,
+      ]);
+      expect(result.rows[0].allowed).toBe(false);
+    }
+    const protectedTables = await pg.query(
+      "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind='r' AND relrowsecurity=true",
+    );
+    expect(protectedTables.rows[0].count).toBe(17);
+  } finally {
+    await pg.close();
+  }
+});
 async function baseline() {
   const pg = await PGlite.create();
   await pg.exec(await migration('202609160001_monolith'));
@@ -34,6 +62,14 @@ test('integrity upgrade preserves valid existing profiles and leads; outbox upgr
     );
     await pg.exec(await migration('202609170001_integrity'));
     await pg.exec(await migration('202609170002_outbox_delivery'));
+    await pg.query('UPDATE presence_profiles SET published=true WHERE id=$1', [profile]);
+    await pg.exec(await migration('202609170003_presence'));
+    const upgraded = (await pg.query('SELECT * FROM presence_profiles WHERE id=$1', [profile])).rows[0];
+    expect(upgraded.published).toBe(true);
+    expect(upgraded.publishedAt).toBeTruthy();
+    expect(upgraded.logoMediaId).toBe(null);
+    expect(upgraded.version).toBe(1);
+    expect((await pg.query('SELECT count(*) FROM presence_content')).rows[0].count).toBe(0);
     expect((await pg.query('SELECT email FROM lead_opportunities WHERE id=$1', [lead])).rows[0].email).toBe(
       'prospect@example.com',
     );

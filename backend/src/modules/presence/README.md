@@ -1,5 +1,5 @@
-# presence
+# Presence & Portfolio
 
-Implemented backend foundation. Depends only on Core. Private application/infrastructure code must not be imported by other modules. See backend/tests for API/tenant/isolation coverage.
+Image-based V1 backend with profile, portfolio/listing/gallery management, publication, public queries and Core media/catalog dependencies. Frontend work is deferred to a separate module repository.
 
-Layout: api → application → domain; infrastructure implements persistence/providers; contracts publishes stable events. Module tables require namespaced ownership in the single backend Prisma schema. Update coordination documents when implementing changes.
+See `docs/presence-backend-handoff.md` for routes, compatibility, version semantics, tests, and explicit exclusions. No live deployment or device testing is claimed.
