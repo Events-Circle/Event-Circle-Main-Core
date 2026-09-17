@@ -4,6 +4,7 @@ This implements the image-based V1 backend journey in Main Core. The separate mo
 
 ## Implemented scope
 
+- Database privacy: RLS and browser-role privilege revocation prevent the Supabase Data API from bypassing Core.
 - Shared Core: immutable processed image assets, organization-scoped upload/read permission, private Supabase storage adapter, small stable category/location catalog, optional canonical supplier catalog IDs and private contact fields.
 - Presence: extended profile, logo/cover, tagline, social links, opening hours, SEO, section visibility/order, explicit contact visibility, profile readiness/publication; portfolios, listings, galleries; ordered media; publication/archive/restore; bounded cursor pagination; optimistic versions and atomic reorder; audit/outbox records in the same database transaction.
 - Public: deliberate profile/child DTOs, six-item collection previews, paginated collections and details, publication-gated media, share URL/QR payload and module-aware Leads inquiry path. Anonymous endpoints use the existing global throttler. Profile ETags are calculated from the current aggregate; every reuse requires revalidation. Other public endpoints and media remain `no-store` so withdrawal does not leave a reusable public response.
