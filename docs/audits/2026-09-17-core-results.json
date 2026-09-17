@@ -1,0 +1,128 @@
+{
+  "auditedCommit": "e3b0c5cbbaf3252bca78d5235c3d18f3630b7f5f",
+  "database": "Fresh disposable PGlite; no live database accessed",
+  "passed": 20,
+  "failed": 8,
+  "results": [
+    {
+      "name": "Fresh migration contains no business records",
+      "status": "PASS"
+    },
+    {
+      "name": "Normalized duplicate account rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Protected Core, Presence and Leads reads require authentication",
+      "status": "PASS"
+    },
+    {
+      "name": "Supplier creation atomically owns organization, OWNER membership and audit",
+      "status": "PASS"
+    },
+    {
+      "name": "Organization headers are required and validated",
+      "status": "PASS"
+    },
+    {
+      "name": "Cross-organization supplier and Presence writes are forbidden",
+      "status": "PASS"
+    },
+    {
+      "name": "Notification records are scoped and read markers cannot cross users",
+      "status": "PASS"
+    },
+    {
+      "name": "Consent history is append-only and private to its user",
+      "status": "PASS"
+    },
+    {
+      "name": "Session lists redact tokens and another user cannot revoke a session",
+      "status": "PASS"
+    },
+    {
+      "name": "Inactive and future subscriptions do not grant paid features",
+      "status": "PASS"
+    },
+    {
+      "name": "Presence drafts, publication and unpublication respect privacy",
+      "status": "PASS"
+    },
+    {
+      "name": "Conflicting public slugs return 409 without partial writes",
+      "status": "PASS"
+    },
+    {
+      "name": "Outbox failure rolls back Presence changes",
+      "status": "PASS"
+    },
+    {
+      "name": "Inquiry opt-out blocks capture",
+      "status": "PASS"
+    },
+    {
+      "name": "Lead intake stores canonical tenant, consent, source and private outbox payload",
+      "status": "PASS"
+    },
+    {
+      "name": "Client cannot inject tenant, stage or internal IDs into lead intake",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid stage is rejected and valid stage updates audit and outbox",
+      "status": "PASS"
+    },
+    {
+      "name": "EDITOR can manage Presence but cannot edit Core supplier identity",
+      "status": "PASS"
+    },
+    {
+      "name": "Planned modules have no routes and are honestly marked unimplemented",
+      "status": "PASS"
+    },
+    {
+      "name": "Valid runtime configuration rejects bad modules, broad proxies and unsafe production issuer",
+      "status": "PASS"
+    },
+    {
+      "name": "DATA-01: punctuation-only phone numbers must be rejected",
+      "status": "FAIL",
+      "evidence": "Expected 400; received 201 for phone ------- without email\n\n201 !== 400\n"
+    },
+    {
+      "name": "DATA-02: whitespace-only business identity must be rejected",
+      "status": "FAIL",
+      "evidence": "Expected 400; received 201 for blank businessName/category/city\n\n201 !== 400\n"
+    },
+    {
+      "name": "DATA-03: whitespace-only lead name, message and consent version must be rejected",
+      "status": "FAIL",
+      "evidence": "Expected 400; received 201 for blank lead fields\n\n201 !== 400\n"
+    },
+    {
+      "name": "CONTRACT-01: nullable stored lead contacts must match the response schema",
+      "status": "FAIL",
+      "evidence": "API returned phone:null but schema is {\"type\":\"string\"}\n+ actual - expected\n\n+ undefined\n- true\n"
+    },
+    {
+      "name": "TRACE-01: outbox correlation must match the originating API request",
+      "status": "FAIL",
+      "evidence": "Outbox correlationId differs from the originating X-Request-Id\n+ actual - expected\n\n+ '41e97f0c-0968-436c-9387-929bf8f06ae7'\n- '9e1fc3d0-1e18-4f76-9b25-05be29bc7a81'\n"
+    },
+    {
+      "name": "INTEGRITY-01: Presence records must not reference nonexistent suppliers",
+      "status": "FAIL",
+      "evidence": "Database accepted Presence profile with nonexistent supplierId"
+    },
+    {
+      "name": "INTEGRITY-02: lead tenant and supplier references must stay consistent",
+      "status": "FAIL",
+      "evidence": "Database accepted a lead whose organization differs from its supplier organization"
+    },
+    {
+      "name": "INTEGRITY-03: deleting an organization must not silently orphan its module records",
+      "status": "FAIL",
+      "evidence": "Supplier was cascaded away but its Presence profile remains"
+    }
+  ]
+}
