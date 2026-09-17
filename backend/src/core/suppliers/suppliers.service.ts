@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Database } from '../../common/database.js';
 import { SupplierDto } from './suppliers.dto.js';
+import { requestContext } from '../../common/request-context.js';
 @Injectable()
 export class SuppliersService {
   constructor(private db: Database) {}
@@ -11,7 +12,12 @@ export class SuppliersService {
       });
       const supplier = await tx.supplier.create({ data: { ...data, organizationId: org.id } });
       await tx.auditLog.create({
-        data: { actorId: userId, action: 'core.supplier.created', targetId: supplier.id },
+        data: {
+          actorId: userId,
+          action: 'core.supplier.created',
+          targetId: supplier.id,
+          correlationId: requestContext.getStore()?.correlationId,
+        },
       });
       return supplier;
     });
@@ -20,7 +26,12 @@ export class SuppliersService {
     return this.db.$transaction(async (tx) => {
       const supplier = await tx.supplier.update({ where: { organizationId }, data });
       await tx.auditLog.create({
-        data: { actorId: userId, action: 'core.supplier.updated', targetId: supplier.id },
+        data: {
+          actorId: userId,
+          action: 'core.supplier.updated',
+          targetId: supplier.id,
+          correlationId: requestContext.getStore()?.correlationId,
+        },
       });
       return supplier;
     });

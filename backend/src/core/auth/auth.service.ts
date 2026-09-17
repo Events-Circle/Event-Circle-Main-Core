@@ -3,6 +3,7 @@ import { Database } from '../../common/database.js';
 import { RUNTIME, type Runtime } from '../../config/runtime.js';
 import { issuer, hashPassword, checkPassword, opaqueToken, tokenHash, bearer } from './tokens.js';
 import { RegisterDto, LoginDto } from './auth.dto.js';
+import { requestContext } from '../../common/request-context.js';
 @Injectable()
 export class AuthService implements OnModuleInit {
   private tokens!: Awaited<ReturnType<typeof issuer>>;
@@ -37,7 +38,13 @@ export class AuthService implements OnModuleInit {
       const user = await tx.user.create({
         data: { email: input.email, displayName: input.displayName, passwordHash },
       });
-      await tx.auditLog.create({ data: { actorId: user.id, action: 'core.account.created' } });
+      await tx.auditLog.create({
+        data: {
+          actorId: user.id,
+          action: 'core.account.created',
+          correlationId: requestContext.getStore()?.correlationId,
+        },
+      });
       return user;
     });
     return this.session(user.id);
@@ -76,7 +83,11 @@ export class AuthService implements OnModuleInit {
       if (!consumed.count) {
         await tx.session.update({ where: { id: previous.sessionId }, data: { revokedAt: new Date() } });
         await tx.auditLog.create({
-          data: { actorId: previous.session.userId, action: 'core.session.refresh_reuse' },
+          data: {
+            actorId: previous.session.userId,
+            action: 'core.session.refresh_reuse',
+            correlationId: requestContext.getStore()?.correlationId,
+          },
         });
         return null;
       }
@@ -97,7 +108,12 @@ export class AuthService implements OnModuleInit {
     await this.db.$transaction([
       this.db.session.updateMany({ where: { id: sessionId, userId }, data: { revokedAt: new Date() } }),
       this.db.auditLog.create({
-        data: { actorId: userId, action: 'core.session.revoked', targetId: sessionId },
+        data: {
+          actorId: userId,
+          action: 'core.session.revoked',
+          targetId: sessionId,
+          correlationId: requestContext.getStore()?.correlationId,
+        },
       }),
     ]);
   }

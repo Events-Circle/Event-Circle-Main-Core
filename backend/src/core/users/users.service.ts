@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Database } from '../../common/database.js';
 import { ProfileDto, ConsentDto } from './users.dto.js';
+import { paginate, PageQuery } from '../../common/pagination.js';
 const safeUser = {
   id: true,
   email: true,
@@ -33,37 +34,67 @@ export class UsersService {
       select: { organizationId: true, role: true, organization: { select: { name: true } } },
     });
   }
-  sessions(userId: string) {
-    return this.db.session.findMany({
-      where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
-      select: { id: true, createdAt: true, expiresAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
+  sessions(userId: string, query: PageQuery) {
+    const where = { userId, revokedAt: null, expiresAt: { gt: new Date() } };
+    return paginate(
+      query,
+      (id) => this.db.session.findFirst({ where: { ...where, id }, select: { id: true } }),
+      (args) =>
+        this.db.session.findMany({
+          where,
+          select: { id: true, createdAt: true, expiresAt: true },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          ...args,
+        }),
+    );
   }
-  consents(userId: string) {
-    return this.db.consent.findMany({ where: { userId }, orderBy: { recordedAt: 'desc' }, take: 100 });
+  consents(userId: string, query: PageQuery) {
+    return paginate(
+      query,
+      (id) => this.db.consent.findFirst({ where: { id, userId }, select: { id: true } }),
+      (args) =>
+        this.db.consent.findMany({
+          where: { userId },
+          orderBy: [{ recordedAt: 'desc' }, { id: 'desc' }],
+          ...args,
+        }),
+    );
   }
   consent(userId: string, data: ConsentDto) {
     return this.db.consent.create({ data: { userId, ...data } });
   }
-  subscriptions(userId: string) {
-    return this.db.subscription.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        planCode: true,
-        status: true,
-        features: true,
-        startsAt: true,
-        endsAt: true,
-        cancelAtPeriodEnd: true,
-      },
-      take: 100,
-    });
+  subscriptions(userId: string, query: PageQuery) {
+    return paginate(
+      query,
+      (id) => this.db.subscription.findFirst({ where: { id, userId }, select: { id: true } }),
+      (args) =>
+        this.db.subscription.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            planCode: true,
+            status: true,
+            features: true,
+            startsAt: true,
+            endsAt: true,
+            cancelAtPeriodEnd: true,
+          },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          ...args,
+        }),
+    );
   }
-  notifications(userId: string) {
-    return this.db.notification.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 100 });
+  notifications(userId: string, query: PageQuery) {
+    return paginate(
+      query,
+      (id) => this.db.notification.findFirst({ where: { id, userId }, select: { id: true } }),
+      (args) =>
+        this.db.notification.findMany({
+          where: { userId },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          ...args,
+        }),
+    );
   }
   async readNotification(userId: string, id: string) {
     const result = await this.db.notification.updateMany({

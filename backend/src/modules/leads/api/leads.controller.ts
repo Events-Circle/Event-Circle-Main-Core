@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Patch, Body, Headers, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Headers,
+  Param,
+  UseGuards,
+  ParseUUIDPipe,
+  Query,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
+import { PageQuery, pageResponse, pageHeaders } from '../../../common/pagination.js';
 import { ApiTags, ApiBearerAuth, ApiHeader, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Identity } from '@events-circle/types';
@@ -19,9 +33,14 @@ export class LeadsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiHeader({ name: 'X-Organization-Id', required: true })
-  @ApiOkResponse({ type: [LeadResponseDto] })
-  list(@Actor() a: Identity, @Headers('x-organization-id') org: string) {
-    return this.leads.list(a.userId, org);
+  @ApiOkResponse({ type: [LeadResponseDto], headers: pageHeaders })
+  async list(
+    @Actor() a: Identity,
+    @Headers('x-organization-id') org: string,
+    @Query() query: PageQuery,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return pageResponse(await this.leads.list(a.userId, org, query), response);
   }
   @Patch(':id/stage')
   @UseGuards(AuthGuard)

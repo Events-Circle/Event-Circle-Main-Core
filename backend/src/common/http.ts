@@ -7,6 +7,7 @@ import {
   INestApplication,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { requestContext } from './request-context.js';
 import helmet from 'helmet';
 import type { Request, Response, NextFunction } from 'express';
 import type { Runtime } from '../config/runtime.js';
@@ -40,11 +41,16 @@ export function configureHttp(app: INestApplication, config: Runtime) {
     .set('trust proxy', config.trustProxy.length ? config.trustProxy : false);
   app.use(helmet());
   app.use((_req: Request, res: Response, next: NextFunction) => {
-    res.setHeader('X-Request-Id', randomUUID());
+    const correlationId = randomUUID();
+    res.setHeader('X-Request-Id', correlationId);
     res.setHeader('Cache-Control', 'no-store');
-    next();
+    requestContext.run({ correlationId }, next);
   });
-  app.enableCors({ origin: config.cors, credentials: false });
+  app.enableCors({
+    origin: config.cors,
+    credentials: false,
+    exposedHeaders: ['X-Request-Id', 'X-Next-Cursor'],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

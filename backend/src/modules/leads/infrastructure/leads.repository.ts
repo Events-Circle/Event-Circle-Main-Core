@@ -5,6 +5,7 @@ import { EventsService } from '../../../core/audit/events.service.js';
 import { AuditService } from '../../../core/audit/audit.service.js';
 import type { LeadInput } from '../domain/lead.js';
 import type { LeadStage } from '@events-circle/contracts';
+import { paginate, PageQuery } from '../../../common/pagination.js';
 @Injectable()
 export class LeadsRepository {
   constructor(
@@ -19,12 +20,17 @@ export class LeadsRepository {
       return { id: lead.id };
     });
   }
-  list(organizationId: string) {
-    return this.db.leadOpportunity.findMany({
-      where: { organizationId },
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      take: 100,
-    });
+  list(organizationId: string, query: PageQuery) {
+    return paginate(
+      query,
+      (id) => this.db.leadOpportunity.findFirst({ where: { id, organizationId }, select: { id: true } }),
+      (args) =>
+        this.db.leadOpportunity.findMany({
+          where: { organizationId },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          ...args,
+        }),
+    );
   }
   update(actorId: string, organizationId: string, id: string, stage: LeadStage) {
     return this.db.$transaction(async (tx) => {

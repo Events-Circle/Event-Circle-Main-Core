@@ -4,6 +4,7 @@ import { PermissionsService } from '../../../core/permissions/permissions.servic
 import { LeadsRepository } from '../infrastructure/leads.repository.js';
 import { hasContact, type LeadInput } from '../domain/lead.js';
 import type { LeadStage } from '@events-circle/contracts';
+import { PageQuery } from '../../../common/pagination.js';
 @Injectable()
 export class LeadsService {
   constructor(
@@ -16,8 +17,8 @@ export class LeadsService {
     const supplier = await this.suppliers.inquiryTarget(supplierId);
     return this.repository.create(supplier.id, supplier.organizationId, data);
   }
-  async list(userId: string, org: string) {
-    return this.repository.list(await this.permissions.require(userId, org, 'leads.read'));
+  async list(userId: string, org: string, query: PageQuery) {
+    return this.repository.list(await this.permissions.require(userId, org, 'leads.read'), query);
   }
   async update(userId: string, org: string, id: string, stage: LeadStage) {
     await this.permissions.require(userId, org, 'leads.write');

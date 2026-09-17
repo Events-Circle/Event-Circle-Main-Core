@@ -14,6 +14,7 @@ export type Runtime = {
   trustProxy: string[];
   edition: string;
   enabled: string[];
+  outboxWorkerEnabled?: boolean;
 };
 export const availableModules = ['presence', 'leads'] as const;
 export const moduleCatalog = [
@@ -49,6 +50,8 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
   const issuer = required('JWT_ISSUER');
   new URL(issuer);
   const production = env.NODE_ENV === 'production';
+  if (env.OUTBOX_WORKER_ENABLED !== undefined && !['true', 'false'].includes(env.OUTBOX_WORKER_ENABLED))
+    throw new Error('Invalid OUTBOX_WORKER_ENABLED');
   for (const origin of cors)
     if (new URL(origin).origin !== origin || (production && !origin.startsWith('https://')))
       throw new Error('Invalid CORS origin');
@@ -68,6 +71,7 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
     trustProxy,
     edition,
     enabled,
+    outboxWorkerEnabled: env.OUTBOX_WORKER_ENABLED === 'true',
   };
 }
 export const RUNTIME = Symbol('RUNTIME');

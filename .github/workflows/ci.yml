@@ -37,12 +37,22 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level low
+      - run: node scripts/check-secrets.mjs
       - run: pnpm generate
       - run: pnpm --filter @events-circle/backend db:migrate
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Verify repaired audit against isolated PostgreSQL
+        env:
+          PGPASSWORD: test-only-password
+          AUDIT_DATABASE_URL: postgresql://circle:test-only-password@localhost:5432/events_circle_audit_test
+        run: |
+          createdb --host=localhost --username=circle events_circle_audit_test
+          DATABASE_URL="$AUDIT_DATABASE_URL" pnpm --filter @events-circle/backend db:migrate
+          node backend/audits/core-verification.mjs
       - run: pnpm contracts
       - run: git diff --exit-code -- backend/openapi.json packages/api-client/src/openapi.d.ts
       - run: pnpm build
