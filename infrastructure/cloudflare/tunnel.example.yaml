@@ -1,0 +1,7 @@
+# Supply real identifiers and a mounted credentials file outside source control.
+tunnel: REPLACE_WITH_TUNNEL_UUID
+credentials-file: /run/secrets/cloudflared.json
+ingress:
+  - hostname: api.example.com
+    service: http://backend:4000
+  - service: http_status:404

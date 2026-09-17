@@ -1,0 +1,6 @@
+# Current verified repository account. Add the second engineer/team before enforcing independent reviews.
+* @accesslap1
+/backend/src/core/ @accesslap1
+/backend/prisma/ @accesslap1
+/packages/contracts/ @accesslap1
+/.github/ @accesslap1

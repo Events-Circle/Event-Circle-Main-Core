@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String         @id @default(uuid()) @db.Uuid
+  email                   String         @unique
+  passwordHash            String
+  displayName             String
+  locale                  String         @default("en")
+  timezone                String         @default("UTC")
+  notificationPreferences Json           @default("{\"email\":false,\"push\":false}")
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  memberships             Membership[]
+  sessions                Session[]
+  consents                Consent[]
+  subscriptions           Subscription[]
+  notifications           Notification[]
+
+  @@map("core_users")
+}
+
+model Session {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String         @db.Uuid
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime       @default(now())
+  tokens    RefreshToken[]
+
+  @@index([userId, revokedAt])
+  @@map("core_sessions")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  sessionId String    @db.Uuid
+  session   Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("core_refresh_tokens")
+}
+
+model Consent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose    String
+  version    String
+  granted    Boolean
+  recordedAt DateTime @default(now())
+
+  @@index([userId, purpose, recordedAt])
+  @@map("core_consents")
+}
+
+model Subscription {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planCode          String
+  status            String
+  provider          String
+  providerReference String   @unique
+  features          String[]
+  startsAt          DateTime
+  endsAt            DateTime
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  @@index([userId, status, endsAt])
+  @@map("core_subscriptions")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("core_notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @db.Uuid
+  action    String
+  targetId  String?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@map("core_audit_logs")
+}
+
+enum MemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Organization {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  supplier    Supplier?
+
+  @@map("core_organizations")
+}
+
+model Membership {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  organizationId String       @db.Uuid
+  role           MemberRole   @default(VIEWER)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("core_memberships")
+}
+
+model Supplier {
+  id              String       @id @default(uuid()) @db.Uuid
+  organizationId  String       @unique @db.Uuid
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessName    String
+  category        String
+  city            String
+  serviceAreas    String[]
+  acceptInquiries Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("core_suppliers")
+}
+
+model OutboxEvent {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String
+  organizationId String    @db.Uuid
+  payload        Json
+  correlationId  String
+  createdAt      DateTime  @default(now())
+  deliveredAt    DateTime?
+  attempts       Int       @default(0)
+
+  @@index([deliveredAt, createdAt])
+  @@map("core_outbox_events")
+}
+
+// Presence owns this table; canonical business identity stays in Core.
+model PresenceProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  supplierId  String   @unique @db.Uuid
+  slug        String   @unique
+  description String   @default("")
+  published   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@map("presence_profiles")
+}
+
+enum LeadStage {
+  NEW
+  HOT
+  FOLLOW_UP
+  QUALIFIED
+  WON
+  LOST
+}
+
+model LeadOpportunity {
+  id                    String    @id @default(uuid()) @db.Uuid
+  organizationId        String    @db.Uuid
+  supplierId            String    @db.Uuid
+  name                  String
+  email                 String?
+  phone                 String?
+  message               String
+  stage                 LeadStage @default(NEW)
+  source                String    @default("DIRECT")
+  campaign              String?
+  contactConsent        Boolean
+  contactConsentVersion String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@map("lead_opportunities")
+}
