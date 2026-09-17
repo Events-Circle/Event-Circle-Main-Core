@@ -86,6 +86,29 @@ test('registers accounts, stores only password/refresh hashes, validates profile
     .send({ locale: 'ar', timezone: 'Asia/Beirut', notificationPreferences: { email: true, push: false } })
     .expect(200);
 });
+test('profile preferences reject malformed values without changing saved preferences', async () => {
+  const preferences = { email: true, push: false };
+  for (const value of [
+    [],
+    [preferences],
+    null,
+    'invalid',
+    {},
+    { email: true },
+    { email: 'true', push: false },
+  ]) {
+    const response = await api()
+      .patch('/api/v1/core/me')
+      .set(auth(a.accessToken))
+      .send({ notificationPreferences: value });
+    expect({ value, status: response.status }).toEqual({ value, status: 400 });
+    const me = (await api().get('/api/v1/core/me').set(auth(a.accessToken)).expect(200)).body;
+    expect(me.notificationPreferences).toEqual(preferences);
+  }
+  await api().patch('/api/v1/core/me').set(auth(a.accessToken)).send({ displayName: 'Updated' }).expect(200);
+  const me = (await api().get('/api/v1/core/me').set(auth(a.accessToken)).expect(200)).body;
+  expect(me.notificationPreferences).toEqual(preferences);
+});
 test('Core owns supplier and organization; Presence exposes only published profiles', async () => {
   supplier = (
     await api()

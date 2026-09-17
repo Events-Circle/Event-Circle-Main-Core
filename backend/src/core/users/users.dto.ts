@@ -8,8 +8,9 @@ import {
   IsIn,
   ValidateNested,
   IsTimeZone,
+  IsObject,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, plainToInstance } from 'class-transformer';
 export class PreferencesDto {
   @ApiProperty() @IsBoolean() email!: boolean;
   @ApiProperty() @IsBoolean() push!: boolean;
@@ -28,8 +29,14 @@ export class ProfileDto {
   @ApiPropertyOptional() @ValidateIf((_object, value) => value !== undefined) @IsTimeZone() timezone?: string;
   @ApiPropertyOptional({ type: PreferencesDto })
   @ValidateIf((_object, value) => value !== undefined)
+  @IsObject()
   @ValidateNested()
-  @Type(() => PreferencesDto)
+  // Reject arrays before converting: PreferencesDto.push is a boolean, not an array method.
+  @Transform(({ value }) =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? plainToInstance(PreferencesDto, value)
+      : value,
+  )
   notificationPreferences?: PreferencesDto;
 }
 export class ConsentDto {
