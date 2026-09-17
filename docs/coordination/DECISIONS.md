@@ -16,3 +16,7 @@
 ## Presence image V1 and separate frontend repositories
 
 Keep all backend modules and one PostgreSQL schema in Main Core. Create separate module frontend repositories later with reusable features/shared contract packages, allowing a combined Growth OS app. Preserve both Android/iOS targets and defer iPhone device testing until Apple membership. Prepare free staging without provisioning accounts. Use immutable backend-processed images initially; direct storage uploads/video/cleanup are later scope. Presence-owned content uses one typed table with kind-specific validation and SQL constraints. See the Presence handoff for compatibility and deployment gates.
+
+## Railway and Expo hosting decision
+
+Use Railway for the API, PostgreSQL and private S3 images; Expo/EAS for mobile builds. Replaces the earlier Render/Supabase staging proposal. Accounts are available but connection and live deployment are a separate next step. See docs/staging-setup.md.

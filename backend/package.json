@@ -15,6 +15,7 @@
     "contracts": "pnpm build && node dist/openapi.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1134.0",
     "@events-circle/contracts": "workspace:*",
     "@events-circle/types": "workspace:*",
     "@nestjs/common": "^11.1.0",

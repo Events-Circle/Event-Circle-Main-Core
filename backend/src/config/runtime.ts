@@ -16,7 +16,10 @@ export type Runtime = {
   enabled: string[];
   outboxWorkerEnabled?: boolean;
   storageUrl?: string;
-  storageKey?: string;
+  storageAccessKeyId?: string;
+  storageSecretAccessKey?: string;
+  storageRegion?: string;
+  storageForcePathStyle?: boolean;
   storageBucket?: string;
   publicWebUrl?: string;
 };
@@ -61,12 +64,25 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
       throw new Error('Invalid CORS origin');
   if (production && !issuer.startsWith('https://')) throw new Error('HTTPS issuer required');
   const port = Number(env.PORT ?? 4000);
-  if (env.STORAGE_URL && !/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(env.STORAGE_URL))
-    throw new Error('Invalid STORAGE_URL');
-  if (env.STORAGE_BUCKET && !/^[a-z0-9-]+$/.test(env.STORAGE_BUCKET))
-    throw new Error('Invalid STORAGE_BUCKET');
-  if ([env.STORAGE_URL, env.STORAGE_KEY, env.STORAGE_BUCKET].filter(Boolean).length % 3)
+  const storageValues = [
+    env.STORAGE_URL,
+    env.STORAGE_ACCESS_KEY_ID,
+    env.STORAGE_SECRET_ACCESS_KEY,
+    env.STORAGE_BUCKET,
+    env.STORAGE_REGION,
+  ];
+  if (storageValues.some(Boolean) && !storageValues.every(Boolean))
     throw new Error('Incomplete media configuration');
+  if (env.STORAGE_KEY) throw new Error('Legacy STORAGE_KEY is unsupported; configure Railway S3 credentials');
+  if (env.STORAGE_URL) {
+    const url = new URL(env.STORAGE_URL);
+    if (url.protocol !== 'https:' || url.origin !== env.STORAGE_URL || url.username || url.password)
+      throw new Error('Invalid STORAGE_URL');
+  }
+  if (env.STORAGE_BUCKET && !/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(env.STORAGE_BUCKET))
+    throw new Error('Invalid STORAGE_BUCKET');
+  if (env.STORAGE_FORCE_PATH_STYLE !== undefined && !['true', 'false'].includes(env.STORAGE_FORCE_PATH_STYLE))
+    throw new Error('Invalid STORAGE_FORCE_PATH_STYLE');
   if (
     env.PUBLIC_WEB_URL &&
     (new URL(env.PUBLIC_WEB_URL).origin !== env.PUBLIC_WEB_URL || !env.PUBLIC_WEB_URL.startsWith('https://'))
@@ -88,7 +104,10 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
     enabled,
     outboxWorkerEnabled: env.OUTBOX_WORKER_ENABLED === 'true',
     storageUrl: env.STORAGE_URL,
-    storageKey: env.STORAGE_KEY,
+    storageAccessKeyId: env.STORAGE_ACCESS_KEY_ID,
+    storageSecretAccessKey: env.STORAGE_SECRET_ACCESS_KEY,
+    storageRegion: env.STORAGE_REGION,
+    storageForcePathStyle: env.STORAGE_FORCE_PATH_STYLE === 'true',
     storageBucket: env.STORAGE_BUCKET,
     publicWebUrl: env.PUBLIC_WEB_URL,
   };

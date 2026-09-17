@@ -5,8 +5,17 @@ import { spawnSync, spawn } from 'node:child_process';
 // Staging-only entry point: explicit database secret, persistent signing keys,
 // additive committed migrations. Never generate new keys on every restart.
 if (process.env.APP_STAGE !== 'staging') throw new Error('Staging entry point requires APP_STAGE=staging');
-if (!process.env.JWT_PRIVATE_KEY_PEM || !process.env.JWT_PUBLIC_KEY_PEM || !process.env.DATABASE_URL)
-  throw new Error('Missing staging secrets');
+for (const name of [
+  'JWT_PRIVATE_KEY_PEM',
+  'JWT_PUBLIC_KEY_PEM',
+  'DATABASE_URL',
+  'STORAGE_URL',
+  'STORAGE_ACCESS_KEY_ID',
+  'STORAGE_SECRET_ACCESS_KEY',
+  'STORAGE_BUCKET',
+  'STORAGE_REGION',
+])
+  if (!process.env[name]) throw new Error(`Missing staging configuration: ${name}`);
 const dir = await mkdtemp(join(tmpdir(), 'circle-keys-'));
 for (const [file, variable] of [
   ['private.pem', 'JWT_PRIVATE_KEY_PEM'],

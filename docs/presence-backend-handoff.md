@@ -4,8 +4,8 @@ This implements the image-based V1 backend journey in Main Core. The separate mo
 
 ## Implemented scope
 
-- Database privacy: RLS and browser-role privilege revocation prevent the Supabase Data API from bypassing Core.
-- Shared Core: immutable processed image assets, organization-scoped upload/read permission, private Supabase storage adapter, small stable category/location catalog, optional canonical supplier catalog IDs and private contact fields.
+- Database privacy: RLS and browser-role privilege revocation keep application tables private; the Railway backend uses a server database role.
+- Shared Core: immutable processed image assets, organization-scoped upload/read permission, private Railway S3 storage adapter, small stable category/location catalog, optional canonical supplier catalog IDs and private contact fields.
 - Presence: extended profile, logo/cover, tagline, social links, opening hours, SEO, section visibility/order, explicit contact visibility, profile readiness/publication; portfolios, listings, galleries; ordered media; publication/archive/restore; bounded cursor pagination; optimistic versions and atomic reorder; audit/outbox records in the same database transaction.
 - Public: deliberate profile/child DTOs, six-item collection previews, paginated collections and details, publication-gated media, share URL/QR payload and module-aware Leads inquiry path. Anonymous endpoints use the existing global throttler. Profile ETags are calculated from the current aggregate; every reuse requires revalidation. Other public endpoints and media remain `no-store` so withdrawal does not leave a reusable public response.
 - Core + Presence works without Leads. The CTA is present only when Leads is enabled and Core accepts inquiries. Capture remains the existing Leads endpoint and derives tenant ownership on the server.
@@ -62,6 +62,6 @@ Presence exports the `PRESENCE_QUERIES` token from its contracts boundary, imple
 
 Automated tests cover processed image uploads (using an in-memory storage double), unsafe image rejection, ownership/role checks, readonly viewers and publishing editors, readiness, schema upgrades, draft/archive privacy, offer expiry, ordering/version conflicts, rollback on outbox failure, public contact privacy, ETags, share metadata, standalone composition, and the supplier-to-inquiry journey. GitHub CI additionally runs native PostgreSQL, dependency checks and Docker builds.
 
-Still required with real accounts: private Supabase bucket creation, database connection/TLS verification, adapter upload/download smoke test, Render health/restart verification, public web deployment, Android installation and native iPhone verification later. There are no customer records seeded. Catalog entries are initial product configuration, and test fixtures run only in disposable/CI databases.
+Still required with real accounts: private Railway bucket creation, database connection/TLS verification, adapter upload/download smoke test, Railway health/restart verification, public web deployment, Android installation and native iPhone verification later. There are no customer records seeded. Catalog entries are initial product configuration, and test fixtures run only in disposable/CI databases.
 
 Defer to later scope: platform moderation, reviews, translated content, slug redirects, advanced contact methods, overnight/multi-interval hours, actual QR image rendering, listing/project context in Leads capture, analytics consumers and production operations. Social links and descriptions are plain content, never rendered as trusted HTML. Current opening hours support one same-day interval per weekday; timezone remains canonical account/business configuration to resolve before scheduling features.

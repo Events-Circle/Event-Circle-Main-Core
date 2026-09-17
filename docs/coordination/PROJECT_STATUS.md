@@ -17,3 +17,7 @@ Starter apps: Expo mobile, Next.js supplier/public web and React admin are runna
 Planned: Content, Promotions, Hosted Events, Insights, Circle AI, Connections/Automation; media, provider credentials, Business Brain, team/invitation administration, billing/webhooks, notification delivery, idempotent external event consumers, password recovery/email verification, deletion/retention, localization UI and production observability. Presence listings/portfolio features and Leads messages/consultations/frontends remain to build.
 
 No live customer database was inspected or migrated. The integrity preflight must be reviewed before upgrading an existing deployment. The older two-database importer, Cloudflare provisioning, production deployment, load tests and real device/browser journeys remain outside the verified scope.
+
+## Railway / Expo deployment preparation
+
+Railway Docker deployment config and private S3 storage replace Render/Supabase. EAS internal-preview APK and production profiles plus shared-package build hook added. No account-specific project IDs or credentials committed. Live Railway smoke tests and EAS native builds are pending account connection. See docs/staging-setup.md.

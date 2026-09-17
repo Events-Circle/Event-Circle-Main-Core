@@ -1,36 +1,68 @@
-import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Inject, Injectable, ServiceUnavailableException, type OnModuleDestroy } from '@nestjs/common';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { RUNTIME, type Runtime } from '../../config/runtime.js';
 
-/** Private Supabase bucket. No client-supplied URLs or storage keys are accepted. */
+/** Private Railway S3 bucket; credentials and object keys remain server-only. */
 @Injectable()
-export class ObjectStore {
-  constructor(@Inject(RUNTIME) private config: Runtime) {}
-  private async request(key: string, method: string, body?: Buffer) {
-    const { storageUrl, storageKey, storageBucket } = this.config;
-    if (!storageUrl || !storageKey || !storageBucket)
+export class ObjectStore implements OnModuleDestroy {
+  private readonly client?: S3Client;
+  constructor(@Inject(RUNTIME) private config: Runtime) {
+    if (
+      config.storageUrl &&
+      config.storageAccessKeyId &&
+      config.storageSecretAccessKey &&
+      config.storageBucket &&
+      config.storageRegion
+    )
+      this.client = new S3Client({
+        endpoint: config.storageUrl,
+        region: config.storageRegion,
+        credentials: {
+          accessKeyId: config.storageAccessKeyId,
+          secretAccessKey: config.storageSecretAccessKey,
+        },
+        forcePathStyle: config.storageForcePathStyle ?? false,
+        maxAttempts: 2,
+        requestChecksumCalculation: 'WHEN_REQUIRED',
+        responseChecksumValidation: 'WHEN_REQUIRED',
+      });
+  }
+  onModuleDestroy() {
+    this.client?.destroy();
+  }
+  private ready(key: string): S3Client {
+    if (!this.client || !/^[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+\.webp$/.test(key))
       throw new ServiceUnavailableException('Media storage unavailable');
-    const response = await fetch(
-      `${storageUrl}/storage/v1/object/${method === 'GET' ? 'authenticated/' : ''}${storageBucket}/${key}`,
-      {
-        method,
-        headers: { Authorization: `Bearer ${storageKey}`, apikey: storageKey, 'Content-Type': 'image/webp' },
-        body: body ? new Uint8Array(body) : undefined,
-        signal: AbortSignal.timeout(15000),
-        redirect: 'error',
-      },
-    ).catch(() => {
-      throw new ServiceUnavailableException();
-    });
-    if (!response.ok) {
-      await response.body?.cancel();
-      throw new ServiceUnavailableException();
-    }
-    return response;
+    return this.client;
   }
   async put(key: string, bytes: Buffer) {
-    await (await this.request(key, 'POST', bytes)).body?.cancel();
+    try {
+      await this.ready(key).send(
+        new PutObjectCommand({
+          Bucket: this.config.storageBucket,
+          Key: key,
+          Body: bytes,
+          ContentType: 'image/webp',
+        }),
+        { abortSignal: AbortSignal.timeout(15000) },
+      );
+    } catch {
+      throw new ServiceUnavailableException('Media storage unavailable');
+    }
   }
   async get(key: string) {
-    return Buffer.from(await (await this.request(key, 'GET')).arrayBuffer());
+    try {
+      const result = await this.ready(key).send(
+        new GetObjectCommand({
+          Bucket: this.config.storageBucket,
+          Key: key,
+        }),
+        { abortSignal: AbortSignal.timeout(15000) },
+      );
+      if (!result.Body) throw new Error('Empty storage response');
+      return Buffer.from(await result.Body.transformToByteArray());
+    } catch {
+      throw new ServiceUnavailableException('Media storage unavailable');
+    }
   }
 }

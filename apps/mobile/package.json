@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "expo start",
     "build": "expo export --platform all",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "pnpm --dir ../.. exec turbo run build --filter=@events-circle/mobile^..."
   },
   "dependencies": {
     "@events-circle/api-client": "workspace:*",
