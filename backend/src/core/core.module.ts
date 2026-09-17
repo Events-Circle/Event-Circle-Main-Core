@@ -14,6 +14,11 @@ import { RegistryController } from './module-registry/registry.controller.js';
 import { EventsService } from './audit/events.service.js';
 import { AuditService } from './audit/audit.service.js';
 import { OutboxWorker } from './audit/outbox.worker.js';
+import { MediaService } from './media/media.service.js';
+import { MediaController } from './media/media.controller.js';
+import { ObjectStore } from './media/object-store.js';
+import { CatalogsService } from './catalogs/catalogs.service.js';
+import { CatalogsController } from './catalogs/catalogs.controller.js';
 @Global()
 @Module({})
 export class CoreModule {
@@ -31,6 +36,9 @@ export class CoreModule {
         EventsService,
         AuditService,
         OutboxWorker,
+        MediaService,
+        ObjectStore,
+        CatalogsService,
       ],
       controllers: [
         AuthController,
@@ -38,6 +46,8 @@ export class CoreModule {
         UsersController,
         HealthController,
         RegistryController,
+        MediaController,
+        CatalogsController,
       ],
       exports: [
         RUNTIME,
@@ -48,6 +58,8 @@ export class CoreModule {
         SuppliersService,
         EventsService,
         AuditService,
+        MediaService,
+        CatalogsService,
       ],
     };
   }

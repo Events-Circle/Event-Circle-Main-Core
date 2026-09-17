@@ -114,13 +114,16 @@ test('Core owns supplier and organization; Presence exposes only published profi
       .expect(201)
   ).body;
   org = supplier.organizationId;
+  const logo = await db.coreMedia.create({
+    data: { organizationId: org, objectKey: `test/${suffix}.webp`, width: 1, height: 1, bytes: 1 },
+  });
   const data = { slug: `studio-${suffix}`, description: 'Studio portfolio', published: false };
   await api().put('/api/v1/presence/profile').set(scoped(a.accessToken)).send(data).expect(200);
   await api().get(`/api/v1/presence/public/${data.slug}`).expect(404);
   await api()
     .put('/api/v1/presence/profile')
     .set(scoped(a.accessToken))
-    .send({ ...data, published: true })
+    .send({ ...data, published: true, logoMediaId: logo.id })
     .expect(200);
   const publicProfile = (await api().get(`/api/v1/presence/public/${data.slug}`).expect(200)).body;
   expect(publicProfile.supplier.businessName).toBe('Test Studio');

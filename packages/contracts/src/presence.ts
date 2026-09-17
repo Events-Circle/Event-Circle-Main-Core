@@ -1,4 +1,4 @@
-/** Presence V1 expansion contracts. Types are not evidence of deployed endpoints. */
+/** Presence image V1 contracts. Deployment status is tracked separately. */
 export const presenceStatuses = ['DRAFT', 'PUBLISHED', 'UNPUBLISHED', 'ARCHIVED'] as const;
 export type PresenceStatus = (typeof presenceStatuses)[number];
 export const listingTypes = ['SERVICE', 'PRODUCT', 'PACKAGE', 'OFFER'] as const;
@@ -35,9 +35,24 @@ export const presenceEventNames = {
   portfolioPublished: 'presence.portfolio.published.v1',
   listingPublished: 'presence.listing.published.v1',
   listingUnpublished: 'presence.listing.unpublished.v1',
+  contentUpdated: 'presence.content.updated.v1',
+  contentLifecycle: 'presence.content.lifecycle.v1',
+  contentReordered: 'presence.content.reordered.v1',
 } as const;
 /** Existing updated event stays byte-shape compatible; expansion events are additive. */
 export interface PresenceEventPayloads {
+  'presence.content.updated.v1': {
+    contentId: string;
+    supplierId: string;
+    kind: 'PORTFOLIO' | 'LISTING' | 'GALLERY';
+  };
+  'presence.content.lifecycle.v1': {
+    contentId: string;
+    supplierId: string;
+    kind: 'PORTFOLIO' | 'LISTING' | 'GALLERY';
+    status: PresenceStatus;
+  };
+  'presence.content.reordered.v1': { supplierId: string; kind: 'PORTFOLIO' | 'LISTING' | 'GALLERY' };
   'presence.profile.updated.v1': { profileId: string; supplierId: string; published: boolean };
   'presence.profile.published.v1': {
     profileId: string;
@@ -78,7 +93,7 @@ export interface PublishedListingSummary {
   title: string;
   coverMediaId: string;
 }
-/** Contracts for future adapters. Not registered as a runtime provider in this increment. */
+/** Implemented by the Presence query provider; consumers must handle disabled modules. */
 export interface PresenceQueries {
   getPublishedListingSummary(id: string): Promise<PublishedListingSummary | null>;
   getPresenceReadiness(actorId: string, organizationId: string): Promise<PresenceReadiness>;

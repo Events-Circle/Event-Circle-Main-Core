@@ -1,5 +1,13 @@
 # API changelog
 
+## Presence image V1 expansion
+
+- Core media multipart upload and scoped reads; category/location catalogs; optional supplier catalog IDs and private contacts.
+- Presence profile brand/SEO/social/hours/contact visibility; publication/readiness endpoints. New publication requires a processed owned logo; legacy published rows are preserved on migration but subsequent publication writes require readiness.
+- Portfolio/listing/gallery CRUD, archive/restore, publication, pagination and optimistic ordering under `/presence/collections/:collection`; public counterparts, media and share endpoints.
+- Shared query port and additive lifecycle events. Existing updated event stays compatible.
+- See `docs/presence-backend-handoff.md` for full field/state/error semantics.
+
 ## 2026-09-17 Presence domain/contracts increment
 
 - Add shared lifecycle, pricing, readiness and planned event/query contracts. Preserve the existing profile-updated V1 event and payload.

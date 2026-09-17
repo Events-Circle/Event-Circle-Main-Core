@@ -10,9 +10,19 @@ const rolePermissions: Record<string, string[]> = {
     'presence.write',
     'leads.read',
     'leads.write',
+    'media.read',
+    'media.write',
   ],
-  EDITOR: ['suppliers.read', 'presence.read', 'presence.write', 'leads.read', 'leads.write'],
-  VIEWER: ['suppliers.read', 'presence.read', 'leads.read'],
+  EDITOR: [
+    'suppliers.read',
+    'presence.read',
+    'presence.write',
+    'leads.read',
+    'leads.write',
+    'media.read',
+    'media.write',
+  ],
+  VIEWER: ['suppliers.read', 'presence.read', 'leads.read', 'media.read'],
 };
 @Injectable()
 export class PermissionsService {
@@ -29,7 +39,7 @@ export class PermissionsService {
       throw new ForbiddenException();
     const module = permission.split('.')[0]!;
     if (
-      module !== 'suppliers' &&
+      !['suppliers', 'media'].includes(module) &&
       (!this.config.enabled.includes(module) || !(await this.access(userId)).features.includes(permission))
     )
       throw new ForbiddenException();

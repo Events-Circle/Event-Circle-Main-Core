@@ -1,0 +1,47 @@
+# Staging preparation only. Requires an existing Supabase project/private bucket.
+services:
+  - type: web
+    name: events-circle-staging-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./infrastructure/docker/backend.Dockerfile
+    dockerContext: .
+    dockerCommand: node /app/scripts/staging-start.mjs
+    healthCheckPath: /api/v1/core/health/ready
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: APP_STAGE
+        value: staging
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: EDITION
+        value: growth-os
+      - key: ENABLED_MODULES
+        value: presence,leads
+      - key: JWT_AUDIENCE
+        value: events-circle-staging
+      - key: JWT_KEY_ID
+        value: staging-v1
+      - key: OUTBOX_WORKER_ENABLED
+        value: 'false'
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ISSUER
+        sync: false
+      - key: JWT_PRIVATE_KEY_PEM
+        sync: false
+      - key: JWT_PUBLIC_KEY_PEM
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PUBLIC_WEB_URL
+        sync: false
+      - key: STORAGE_URL
+        sync: false
+      - key: STORAGE_KEY
+        sync: false
+      - key: STORAGE_BUCKET
+        sync: false

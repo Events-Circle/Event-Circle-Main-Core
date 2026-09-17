@@ -15,6 +15,10 @@ export type Runtime = {
   edition: string;
   enabled: string[];
   outboxWorkerEnabled?: boolean;
+  storageUrl?: string;
+  storageKey?: string;
+  storageBucket?: string;
+  publicWebUrl?: string;
 };
 export const availableModules = ['presence', 'leads'] as const;
 export const moduleCatalog = [
@@ -57,6 +61,17 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
       throw new Error('Invalid CORS origin');
   if (production && !issuer.startsWith('https://')) throw new Error('HTTPS issuer required');
   const port = Number(env.PORT ?? 4000);
+  if (env.STORAGE_URL && !/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(env.STORAGE_URL))
+    throw new Error('Invalid STORAGE_URL');
+  if (env.STORAGE_BUCKET && !/^[a-z0-9-]+$/.test(env.STORAGE_BUCKET))
+    throw new Error('Invalid STORAGE_BUCKET');
+  if ([env.STORAGE_URL, env.STORAGE_KEY, env.STORAGE_BUCKET].filter(Boolean).length % 3)
+    throw new Error('Incomplete media configuration');
+  if (
+    env.PUBLIC_WEB_URL &&
+    (new URL(env.PUBLIC_WEB_URL).origin !== env.PUBLIC_WEB_URL || !env.PUBLIC_WEB_URL.startsWith('https://'))
+  )
+    throw new Error('Invalid PUBLIC_WEB_URL');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port');
   return {
     nodeEnv: env.NODE_ENV ?? 'development',
@@ -72,6 +87,10 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
     edition,
     enabled,
     outboxWorkerEnabled: env.OUTBOX_WORKER_ENABLED === 'true',
+    storageUrl: env.STORAGE_URL,
+    storageKey: env.STORAGE_KEY,
+    storageBucket: env.STORAGE_BUCKET,
+    publicWebUrl: env.PUBLIC_WEB_URL,
   };
 }
 export const RUNTIME = Symbol('RUNTIME');

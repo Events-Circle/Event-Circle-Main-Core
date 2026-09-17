@@ -34,6 +34,14 @@ test('integrity upgrade preserves valid existing profiles and leads; outbox upgr
     );
     await pg.exec(await migration('202609170001_integrity'));
     await pg.exec(await migration('202609170002_outbox_delivery'));
+    await pg.query('UPDATE presence_profiles SET published=true WHERE id=$1', [profile]);
+    await pg.exec(await migration('202609170003_presence'));
+    const upgraded = (await pg.query('SELECT * FROM presence_profiles WHERE id=$1', [profile])).rows[0];
+    expect(upgraded.published).toBe(true);
+    expect(upgraded.publishedAt).toBeTruthy();
+    expect(upgraded.logoMediaId).toBe(null);
+    expect(upgraded.version).toBe(1);
+    expect((await pg.query('SELECT count(*) FROM presence_content')).rows[0].count).toBe(0);
     expect((await pg.query('SELECT email FROM lead_opportunities WHERE id=$1', [lead])).rows[0].email).toBe(
       'prospect@example.com',
     );

@@ -1,4 +1,6 @@
-# Presence & Portfolio: backend delivery boundary
+# Presence & Portfolio: initial delivery plan
+
+Historical planning record from the first increment. The implemented V1 scope, deviations and remaining gates are now documented in `docs/presence-backend-handoff.md`.
 
 Source: Events Circle Presence & Portfolio Implementation Guide, supplied 17 September 2026. This document covers its first recommended PR: Core fit gaps, domain rules, and contracts. It does **not** claim the complete module or new APIs are implemented.
 

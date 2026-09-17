@@ -1,6 +1,8 @@
 # Project status
 
-Presence & Portfolio expansion: first backend increment adds domain rules, additive shared event/query types, a planned Core media port and the fit-gap/implementation plan in `docs/presence-backend-plan.md`. Existing HTTP APIs and database schema remain unchanged. Verification for this increment: 27 backend tests, 34 existing audit checks, lint/boundaries, workspace type checks and formatting pass locally. Expanded persistence, media/catalog adapters and APIs remain to implement; this is not the completed module.
+Presence & Portfolio image V1 backend is implemented on the feature branch: Core image processing/private storage adapter and catalogs, additive schema, profile and content APIs, publication, public aggregates/media/share and Leads inquiry handoff. Android and iOS JavaScript exports are verified. See `docs/presence-backend-handoff.md` and `docs/staging-setup.md` for acceptance evidence and remaining live-provider/device gates. The module frontend repo has not been created.
+
+The following is the earlier foundation audit record:
 
 Updated: 2026-09-17. The recovered monorepo was merged through PR #1 into main at `e3b0c5c`. Its PostgreSQL/Docker CI passed. PR #2 records the deeper audit and its remediation. See `docs/audits/2026-09-17-remediation.md` for current scope, evidence and operational limits; the original audit report is historical.
 

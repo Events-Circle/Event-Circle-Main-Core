@@ -8,7 +8,7 @@ export interface ReadyMedia {
   height: number;
 }
 /**
- * Planned Core adapter boundary. No implementation/upload route exists yet.
+ * Implemented by MediaService; rows represent successfully processed, stored images.
  * Implementations must check ownership and READY status, mask foreign IDs as
  * not found, and revalidate under the transaction that attaches the reference.
  * Clients cannot declare an upload READY or supply a trusted storage URL.

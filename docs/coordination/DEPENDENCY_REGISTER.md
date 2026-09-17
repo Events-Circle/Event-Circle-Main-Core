@@ -12,3 +12,5 @@
 | Async integrations               | Leased at-least-once outbox dispatcher and delivery tracking | Implemented opt-in; consumers must deduplicate; no external consumer active |
 
 Do not satisfy missing dependencies with imports into another module's private repository. Update this register when enabling any provider or cross-module event consumer.
+
+Presence image V1 now consumes Core media and catalog services. Supabase private-object storage adapter exists, but live credentials, bucket privacy and network/TLS need deployment verification. External consumers remain disabled. Shared contracts/api-client packages can be packed from a reviewed commit for later frontend repositories.

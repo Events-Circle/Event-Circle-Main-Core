@@ -4,6 +4,7 @@
     "slug": "events-circle",
     "version": "0.2.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light"
+    "userInterfaceStyle": "light",
+    "platforms": ["android", "ios"]
   }
 }

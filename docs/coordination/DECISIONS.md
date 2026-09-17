@@ -12,3 +12,7 @@
 - Editions compose modules without source duplication. Initial composition tests do not imply standalone commercial products are released.
 - Keep Cloudflare at the edge; private origin access and explicit proxy trust. No hosting/provider provisioning is bundled with code changes.
 - Protect main with reviewed PRs and CI. CODEOWNERS lists the current verified repository account; add the second engineer/team and require independent review in GitHub settings before team work. Adding CODEOWNERS does not itself enable branch protection.
+
+## Presence image V1 and separate frontend repositories
+
+Keep all backend modules and one PostgreSQL schema in Main Core. Create separate module frontend repositories later with reusable features/shared contract packages, allowing a combined Growth OS app. Preserve both Android/iOS targets and defer iPhone device testing until Apple membership. Prepare free staging without provisioning accounts. Use immutable backend-processed images initially; direct storage uploads/video/cleanup are later scope. Presence-owned content uses one typed table with kind-specific validation and SQL constraints. See the Presence handoff for compatibility and deployment gates.

@@ -120,6 +120,7 @@ model Organization {
   createdAt   DateTime     @default(now())
   memberships Membership[]
   supplier    Supplier?
+  media       CoreMedia[]
 
   @@map("core_organizations")
 }
@@ -145,10 +146,17 @@ model Supplier {
   city              String
   serviceAreas      String[]
   acceptInquiries   Boolean           @default(false)
+  contactEmail      String?
+  contactPhone      String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   presenceProfiles  PresenceProfile[]
   leadOpportunities LeadOpportunity[]
+  presenceContent   PresenceContent[]
+  categoryId        String?           @db.Uuid
+  categoryEntry     CoreCatalog?      @relation("SupplierCategory", fields: [categoryId], references: [id], onDelete: Restrict)
+  locationId        String?           @db.Uuid
+  locationEntry     CoreCatalog?      @relation("SupplierLocation", fields: [locationId], references: [id], onDelete: Restrict)
 
   @@unique([id, organizationId])
   @@map("core_suppliers")
@@ -174,15 +182,143 @@ model OutboxEvent {
 
 // Presence owns this table; canonical business identity stays in Core.
 model PresenceProfile {
-  id          String   @id @default(uuid()) @db.Uuid
-  supplierId  String   @unique @db.Uuid
-  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  slug        String   @unique
-  description String   @default("")
-  published   Boolean  @default(false)
-  updatedAt   DateTime @updatedAt
+  id             String     @id @default(uuid()) @db.Uuid
+  supplierId     String     @unique @db.Uuid
+  supplier       Supplier   @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  slug           String     @unique
+  description    String     @default("")
+  published      Boolean    @default(false)
+  updatedAt      DateTime   @updatedAt
+  tagline        String     @default("")
+  showEmail      Boolean    @default(false)
+  showPhone      Boolean    @default(false)
+  logoMediaId    String?    @db.Uuid
+  logo           CoreMedia? @relation("PresenceLogo", fields: [logoMediaId], references: [id], onDelete: Restrict)
+  coverMediaId   String?    @db.Uuid
+  cover          CoreMedia? @relation("PresenceCover", fields: [coverMediaId], references: [id], onDelete: Restrict)
+  seoTitle       String     @default("")
+  seoDescription String     @default("")
+  accentColor    String     @default("#2563eb")
+  socialLinks    Json       @default("[]")
+  openingHours   Json       @default("[]")
+  sections       String[]   @default(["portfolio", "listings", "gallery"])
+  publishedAt    DateTime?
+  version        Int        @default(1)
 
   @@map("presence_profiles")
+}
+
+enum CatalogKind {
+  CATEGORY
+  LOCATION
+}
+
+model CoreCatalog {
+  id                 String            @id @default(uuid()) @db.Uuid
+  kind               CatalogKind
+  label              String
+  active             Boolean           @default(true)
+  contentCategories  PresenceContent[] @relation("ContentCategory")
+  contentLocations   PresenceContent[] @relation("ContentLocation")
+  supplierCategories Supplier[]        @relation("SupplierCategory")
+  supplierLocations  Supplier[]        @relation("SupplierLocation")
+
+  @@unique([kind, label])
+  @@map("core_catalogs")
+}
+
+model CoreMedia {
+  id             String                 @id @default(uuid()) @db.Uuid
+  organizationId String                 @db.Uuid
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  objectKey      String                 @unique
+  mimeType       String                 @default("image/webp")
+  width          Int
+  height         Int
+  bytes          Int
+  createdAt      DateTime               @default(now())
+  logos          PresenceProfile[]      @relation("PresenceLogo")
+  covers         PresenceProfile[]      @relation("PresenceCover")
+  attachments    PresenceContentMedia[]
+
+  @@index([organizationId, createdAt])
+  @@map("core_media")
+}
+
+enum PresenceContentKind {
+  PORTFOLIO
+  LISTING
+  GALLERY
+}
+
+enum PresenceContentStatus {
+  DRAFT
+  PUBLISHED
+  UNPUBLISHED
+  ARCHIVED
+}
+
+enum PresenceListingType {
+  SERVICE
+  PRODUCT
+  PACKAGE
+  OFFER
+}
+
+enum PresencePricingMode {
+  FIXED
+  FROM
+  ON_REQUEST
+  FREE
+}
+
+model PresenceContent {
+  id               String                 @id @default(uuid()) @db.Uuid
+  supplierId       String                 @db.Uuid
+  supplier         Supplier               @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  kind             PresenceContentKind
+  title            String
+  summary          String                 @default("")
+  description      String                 @default("")
+  categoryId       String?                @db.Uuid
+  category         CoreCatalog?           @relation("ContentCategory", fields: [categoryId], references: [id], onDelete: Restrict)
+  locationId       String?                @db.Uuid
+  location         CoreCatalog?           @relation("ContentLocation", fields: [locationId], references: [id], onDelete: Restrict)
+  occurredAt       DateTime?
+  type             PresenceListingType?
+  pricingMode      PresencePricingMode?
+  amountMinor      Int?
+  currency         String?
+  validFrom        DateTime?
+  validUntil       DateTime?
+  serviceAreas     String[]               @default([])
+  availabilityNote String                 @default("")
+  featured         Boolean                @default(false)
+  status           PresenceContentStatus  @default(DRAFT)
+  displayOrder     Int                    @default(0)
+  version          Int                    @default(1)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  publishedAt      DateTime?
+  media            PresenceContentMedia[]
+
+  @@index([supplierId, kind, status, displayOrder, id])
+  @@map("presence_content")
+}
+
+model PresenceContentMedia {
+  id           String          @id @default(uuid()) @db.Uuid
+  contentId    String          @db.Uuid
+  content      PresenceContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  mediaId      String          @db.Uuid
+  media        CoreMedia       @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+  role         String
+  altText      String
+  caption      String          @default("")
+  displayOrder Int
+
+  @@unique([contentId, mediaId])
+  @@map("presence_content_media")
 }
 
 enum LeadStage {
