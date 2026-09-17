@@ -1,5 +1,9 @@
 # One database, explicit ownership
 
+## September 17 integrity update
+
+New transactional migrations preserve existing data and add Presence supplier references, composite Lead supplier/organization references, audit correlation and outbox delivery metadata. Run `integrity-preflight.sql` on a verified staging copy before an existing-database upgrade. Orphan/mismatched records cause the migration to fail; no automatic cleanup is performed. Supplier/organization deletion is restricted while module records reference the supplier. See `docs/audits/2026-09-17-remediation.md` for the policy and test evidence.
+
 The only schema is `backend/prisma/schema.prisma`; the only migration history is `backend/prisma/migrations`. This directory documents ownership and transitions; do not add a second schema here.
 
 Core: `core_*`. Presence: `presence_profiles`. Leads: `lead_opportunities`. Module repositories may access their own tables only and call Core public services for shared records.

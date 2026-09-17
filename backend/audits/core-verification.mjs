@@ -1,9 +1,11 @@
-// Read-only source audit; every database write below targets a fresh disposable PGlite instance.
+// Regression audit: disposable PGlite by default, or explicitly named loopback CI database.
 // Run after pnpm generate && pnpm --filter @events-circle/backend build.
 // Exit 1 means a required behavior failed, not that the runner failed to start.
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { migrateDisposable } from '../tests/migrations.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import request from 'supertest';
@@ -12,6 +14,8 @@ import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 import { createApp, specification } from '../dist/app.js';
 import { Database } from '../dist/common/database.js';
 import { EventsService } from '../dist/core/audit/events.service.js';
+import { OutboxWorker } from '../dist/core/audit/outbox.worker.js';
+import { requestContext } from '../dist/common/request-context.js';
 import { runtime } from '../dist/config/runtime.js';
 
 const results = [];
@@ -25,19 +29,26 @@ async function check(name, run) {
   console.log(`${results.at(-1).status}: ${name}`);
 }
 const dir = await mkdtemp(join(tmpdir(), 'events-circle-audit-'));
-const pg = await PGlite.create();
+const native = process.env.AUDIT_DATABASE_URL;
+if (native) {
+  const url = new URL(native);
+  if (
+    process.env.CI !== 'true' ||
+    !['localhost', '127.0.0.1'].includes(url.hostname) ||
+    url.pathname !== '/events_circle_audit_test'
+  )
+    throw new Error('Audit requires an isolated loopback CI database named events_circle_audit_test');
+}
+const pg = native ? null : await PGlite.create();
 let server, app;
 try {
-  await pg.exec(
-    await readFile(
-      new URL('../prisma/migrations/202609160001_monolith/migration.sql', import.meta.url),
-      'utf8',
-    ),
-  );
-  server = new PGLiteSocketServer({ db: pg, host: '127.0.0.1', port: 0 });
-  await server.start();
-  // Never use any configured live or test database URL.
-  process.env.DATABASE_URL = `postgresql://postgres:postgres@${server.getServerConn()}/postgres?connection_limit=1&sslmode=disable`;
+  if (pg) {
+    await migrateDisposable(pg);
+    server = new PGLiteSocketServer({ db: pg, host: '127.0.0.1', port: 0 });
+    await server.start();
+    // Never use any configured live or test database URL.
+    process.env.DATABASE_URL = `postgresql://postgres:postgres@${server.getServerConn()}/postgres?connection_limit=1&sslmode=disable`;
+  } else process.env.DATABASE_URL = native;
   const keys = generateKeyPairSync('ed25519');
   await writeFile(join(dir, 'private.pem'), keys.privateKey.export({ type: 'pkcs8', format: 'pem' }), {
     mode: 0o600,
@@ -405,6 +416,9 @@ try {
     } catch (error) {
       if (error.code === 'P2003') rejected = true;
       else throw error;
+    } finally {
+      // Portable socket adapter closes its connection after constraint errors.
+      if (pg) await db.$disconnect();
     }
     assert.ok(rejected, 'Database accepted Presence profile with nonexistent supplierId');
   });
@@ -417,6 +431,8 @@ try {
     } catch (error) {
       if (error.code === 'P2003') rejected = true;
       else throw error;
+    } finally {
+      if (pg) await db.$disconnect();
     }
     assert.ok(rejected, 'Database accepted a lead whose organization differs from its supplier organization');
   });
@@ -438,18 +454,213 @@ try {
       try {
         await db.organization.delete({ where: { id: org.id } });
       } catch (error) {
-        if (error.code === 'P2003') restricted = true;
+        if (
+          error.code === 'P2003' ||
+          (error.message.includes('23001') && error.message.includes('foreign key constraint'))
+        )
+          restricted = true;
         else throw error;
+      } finally {
+        if (pg) await db.$disconnect();
       }
-      assert.ok(
-        restricted || (await db.presenceProfile.count({ where: { supplierId: target.id } })) === 0,
-        'Supplier was cascaded away but its Presence profile remains',
+      assert.ok(restricted, 'Deletion must be restricted while module records reference the supplier');
+      assert.equal(await db.supplier.count({ where: { id: target.id } }), 1);
+      assert.equal(await db.presenceProfile.count({ where: { supplierId: target.id } }), 1);
+    },
+  );
+  await check(
+    'PAGINATION: every previously capped list reaches records beyond 100 without overlap',
+    async () => {
+      const now = new Date();
+      const batches = [
+        [
+          'leadOpportunity',
+          'leads',
+          { ...inquiry, supplierId: supplier.id, organizationId: supplier.organizationId },
+        ],
+        ['notification', 'core/notifications', { userId: uid, kind: 'test', title: 'Page', body: 'Page' }],
+        ['consent', 'core/consents', { userId: uid, purpose: 'analytics', version: 'v1', granted: true }],
+        ['session', 'core/sessions', { userId: uid, expiresAt: new Date(Date.now() + 600000) }],
+        [
+          'subscription',
+          'core/subscriptions',
+          {
+            userId: uid,
+            planCode: 'pagination',
+            status: 'canceled',
+            provider: 'test',
+            features: [],
+            startsAt: now,
+            endsAt: now,
+          },
+        ],
+      ];
+      for (const [model, path, data] of batches) {
+        await db[model].createMany({
+          data: Array.from({ length: 105 }, () => ({
+            ...data,
+            ...(model === 'subscription' ? { providerReference: randomUUID() } : {}),
+          })),
+        });
+        const expected = await db[model].count({
+          where: model === 'leadOpportunity' ? { organizationId: supplier.organizationId } : { userId: uid },
+        });
+        const seen = new Set();
+        let cursor;
+        do {
+          const response = await api()
+            .get(`/api/v1/${path}`)
+            .set(scope(owner, supplier))
+            .query({ limit: 37, ...(cursor ? { cursor } : {}) })
+            .expect(200);
+          for (const item of response.body) {
+            assert.equal(seen.has(item.id), false);
+            seen.add(item.id);
+          }
+          cursor = response.headers['x-next-cursor'];
+          assert.ok(seen.size <= expected);
+        } while (cursor);
+        assert.equal(seen.size, expected, path);
+        await api().get(`/api/v1/${path}`).set(scope(owner, supplier)).query({ limit: 101 }).expect(400);
+        await api()
+          .get(`/api/v1/${path}`)
+          .set(scope(owner, supplier))
+          .query({ cursor: 'invalid' })
+          .expect(400);
+      }
+    },
+  );
+  await check('PAGINATION: foreign user or tenant cursor is rejected', async () => {
+    const foreign = await db.leadOpportunity.create({
+      data: { ...inquiry, supplierId: otherSupplier.id, organizationId: otherSupplier.organizationId },
+    });
+    await api().get('/api/v1/leads').set(scope(owner, supplier)).query({ cursor: foreign.id }).expect(400);
+    const note = await db.notification.create({
+      data: { userId: outsiderId, kind: 'test', title: 'Private', body: 'Private' },
+    });
+    await api().get('/api/v1/core/notifications').set(auth(owner)).query({ cursor: note.id }).expect(400);
+  });
+  await check(
+    'OUTBOX: successful dispatch carries event identity/context and does not redeliver',
+    async () => {
+      const events = app.get(EventsService);
+      const worker = app.get(OutboxWorker);
+      const row = await db.outboxEvent.create({
+        data: {
+          name: 'audit.delivery.v1',
+          organizationId: supplier.organizationId,
+          payload: {},
+          correlationId: randomUUID(),
+        },
+      });
+      let calls = 0;
+      const off = events.subscribe(row.name, async (event) => {
+        assert.equal(event.id, row.id);
+        assert.equal(requestContext.getStore().correlationId, row.correlationId);
+        calls++;
+      });
+      try {
+        await Promise.all([worker.drainOnce(), worker.drainOnce()]);
+        await worker.drainOnce();
+      } finally {
+        off();
+      }
+      assert.equal(calls, 1);
+      assert.ok((await db.outboxEvent.findUnique({ where: { id: row.id } })).deliveredAt);
+    },
+  );
+  await check(
+    'OUTBOX: failure backs off, unhandled events stay pending, expired claims recover',
+    async () => {
+      const events = app.get(EventsService);
+      const worker = app.get(OutboxWorker);
+      const row = await db.outboxEvent.create({
+        data: {
+          name: 'audit.retry.v1',
+          organizationId: supplier.organizationId,
+          payload: {},
+          correlationId: randomUUID(),
+        },
+      });
+      const off = events.subscribe(row.name, async () => {
+        throw new Error('Must never be persisted');
+      });
+      await worker.drainOnce();
+      off();
+      let state = await db.outboxEvent.findUnique({ where: { id: row.id } });
+      assert.equal(state.attempts, 1);
+      assert.equal(state.deliveredAt, null);
+      assert.equal(state.lastError, 'HANDLER_FAILED');
+      assert.ok(state.nextAttemptAt > state.createdAt);
+      await worker.drainOnce();
+      assert.equal((await db.outboxEvent.findUnique({ where: { id: row.id } })).attempts, 1);
+      await db.outboxEvent.update({
+        where: { id: row.id },
+        data: { lockedUntil: new Date(0), nextAttemptAt: new Date(0), claimToken: randomUUID() },
+      });
+      const success = events.subscribe(row.name, async () => {});
+      try {
+        await worker.drainOnce();
+      } finally {
+        success();
+      }
+      state = await db.outboxEvent.findUnique({ where: { id: row.id } });
+      assert.equal(state.attempts, 2);
+      assert.ok(state.deliveredAt);
+      assert.equal(state.lastError, null);
+      assert.equal(
+        await db.outboxEvent.count({ where: { name: 'leads.lead.created.v1', deliveredAt: { not: null } } }),
+        0,
       );
     },
   );
+  await check('OUTBOX: retry cap leaves exhausted events visible for operator review', async () => {
+    const events = app.get(EventsService);
+    const row = await db.outboxEvent.create({
+      data: {
+        name: 'audit.exhausted.v1',
+        organizationId: supplier.organizationId,
+        payload: {},
+        correlationId: randomUUID(),
+        attempts: 10,
+      },
+    });
+    let calls = 0;
+    const off = events.subscribe(row.name, async () => {
+      calls++;
+    });
+    try {
+      await app.get(OutboxWorker).drainOnce();
+    } finally {
+      off();
+    }
+    assert.equal(calls, 0);
+    assert.equal((await db.outboxEvent.findUnique({ where: { id: row.id } })).deliveredAt, null);
+  });
+  await check('VALIDATION: usable international phones survive normalization', async () => {
+    const response = await api()
+      .post(`/api/v1/leads/public/${supplier.id}`)
+      .send({
+        ...inquiry,
+        email: undefined,
+        name: ' Prospect ',
+        phone: ' +961 1 234 567 ',
+        message: ' Hello ',
+        contactConsentVersion: ' v1 ',
+      })
+      .expect(201);
+    const row = await db.leadOpportunity.findUnique({ where: { id: response.body.id } });
+    assert.equal(row.phone, '+961 1 234 567');
+    assert.equal(row.name, 'Prospect');
+    assert.equal(row.message, 'Hello');
+    assert.equal(row.contactConsentVersion, 'v1');
+  });
   const report = {
-    auditedCommit: 'e3b0c5cbbaf3252bca78d5235c3d18f3630b7f5f',
-    database: 'Fresh disposable PGlite; no live database accessed',
+    auditedCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+    workingTreeChanges: Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()),
+    database: native
+      ? 'Isolated native PostgreSQL CI database'
+      : 'Fresh disposable PGlite; no live database accessed',
     passed: results.filter((r) => r.status === 'PASS').length,
     failed: results.filter((r) => r.status === 'FAIL').length,
     results,
@@ -460,6 +671,6 @@ try {
 } finally {
   if (app) await app.close();
   if (server) await server.stop();
-  await pg.close();
+  if (pg) await pg.close();
   await rm(dir, { recursive: true, force: true });
 }

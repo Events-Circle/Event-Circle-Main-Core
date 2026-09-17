@@ -349,9 +349,43 @@
     "/api/v1/core/sessions": {
       "get": {
         "operationId": "UsersController_sessions",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
@@ -406,9 +440,43 @@
     "/api/v1/core/consents": {
       "get": {
         "operationId": "UsersController_consents",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
@@ -469,9 +537,43 @@
     "/api/v1/core/subscriptions": {
       "get": {
         "operationId": "UsersController_subscriptions",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
@@ -524,9 +626,43 @@
     "/api/v1/core/notifications": {
       "get": {
         "operationId": "UsersController_notifications",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
@@ -814,6 +950,30 @@
             }
           },
           {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "X-Organization-Id",
             "in": "header",
             "required": true,
@@ -824,6 +984,15 @@
         ],
         "responses": {
           "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
@@ -1166,6 +1335,10 @@
           "role",
           "organization"
         ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
       },
       "SessionDto": {
         "type": "object",
@@ -1531,39 +1704,6 @@
       "LeadResponseDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "DIRECT",
-              "QR",
-              "PROFILE",
-              "LISTING",
-              "SOCIAL",
-              "ADS",
-              "EMAIL"
-            ]
-          },
-          "campaign": {
-            "type": "string"
-          },
-          "contactConsent": {
-            "type": "boolean"
-          },
-          "contactConsentVersion": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -1583,18 +1723,67 @@
               "WON",
               "LOST"
             ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "DIRECT",
+              "QR",
+              "PROFILE",
+              "LISTING",
+              "SOCIAL",
+              "ADS",
+              "EMAIL"
+            ]
+          },
+          "campaign": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactConsent": {
+            "type": "boolean"
+          },
+          "contactConsentVersion": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "required": [
-          "name",
-          "message",
-          "source",
-          "contactConsent",
-          "contactConsentVersion",
           "id",
           "supplierId",
           "organizationId",
-          "stage"
+          "stage",
+          "name",
+          "email",
+          "phone",
+          "message",
+          "source",
+          "campaign",
+          "contactConsent",
+          "contactConsentVersion",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "StageDto": {

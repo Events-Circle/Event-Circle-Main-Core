@@ -454,6 +454,7 @@ export interface components {
             role: "OWNER" | "EDITOR" | "VIEWER";
             organization: components["schemas"]["OrganizationNameDto"];
         };
+        Object: Record<string, never>;
         SessionDto: {
             id: string;
             /** Format: date-time */
@@ -551,20 +552,24 @@ export interface components {
             id: string;
         };
         LeadResponseDto: {
-            name: string;
-            email?: string;
-            phone?: string;
-            message: string;
-            /** @enum {string} */
-            source: "DIRECT" | "QR" | "PROFILE" | "LISTING" | "SOCIAL" | "ADS" | "EMAIL";
-            campaign?: string;
-            contactConsent: boolean;
-            contactConsentVersion: string;
             id: string;
             supplierId: string;
             organizationId: string;
             /** @enum {string} */
             stage: "NEW" | "HOT" | "FOLLOW_UP" | "QUALIFIED" | "WON" | "LOST";
+            name: string;
+            email: string | null;
+            phone: string | null;
+            message: string;
+            /** @enum {string} */
+            source: "DIRECT" | "QR" | "PROFILE" | "LISTING" | "SOCIAL" | "ADS" | "EMAIL";
+            campaign: string | null;
+            contactConsent: boolean;
+            contactConsentVersion: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         StageDto: {
             /** @enum {string} */
@@ -816,7 +821,10 @@ export interface operations {
     };
     UsersController_sessions: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -825,6 +833,8 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -854,7 +864,10 @@ export interface operations {
     };
     UsersController_consents: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -863,6 +876,8 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -896,7 +911,10 @@ export interface operations {
     };
     UsersController_subscriptions: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -905,6 +923,8 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -934,7 +954,10 @@ export interface operations {
     };
     UsersController_notifications: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -943,6 +966,8 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1121,7 +1146,10 @@ export interface operations {
     };
     LeadsController_list: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
             header: {
                 "x-organization-id": string;
                 "X-Organization-Id": string;
@@ -1133,6 +1161,8 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
                     [name: string]: unknown;
                 };
                 content: {

@@ -1,7 +1,8 @@
 import { beforeAll, afterAll, test, expect } from '@jest/globals';
 import request from 'supertest';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
-import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { migrateDisposable } from './migrations.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../dist/app.js';
@@ -21,12 +22,7 @@ beforeAll(async () => {
     const { PGLiteSocketServer } = await import('@electric-sql/pglite-socket');
     const pg = await PGlite.create();
     cleanup.push(() => pg.close());
-    await pg.exec(
-      await readFile(
-        new URL('../prisma/migrations/202609160001_monolith/migration.sql', import.meta.url),
-        'utf8',
-      ),
-    );
+    await migrateDisposable(pg);
     const server = new PGLiteSocketServer({ db: pg, host: '127.0.0.1', port: 0 });
     await server.start();
     cleanup.push(() => server.stop());

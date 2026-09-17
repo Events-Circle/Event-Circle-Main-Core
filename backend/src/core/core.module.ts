@@ -13,6 +13,7 @@ import { HealthController } from './health/health.controller.js';
 import { RegistryController } from './module-registry/registry.controller.js';
 import { EventsService } from './audit/events.service.js';
 import { AuditService } from './audit/audit.service.js';
+import { OutboxWorker } from './audit/outbox.worker.js';
 @Global()
 @Module({})
 export class CoreModule {
@@ -29,6 +30,7 @@ export class CoreModule {
         UsersService,
         EventsService,
         AuditService,
+        OutboxWorker,
       ],
       controllers: [
         AuthController,

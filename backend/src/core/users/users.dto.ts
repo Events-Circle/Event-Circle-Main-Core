@@ -11,6 +11,7 @@ import {
   IsObject,
 } from 'class-validator';
 import { Transform, plainToInstance } from 'class-transformer';
+import { Trim } from '../../common/trim.js';
 export class PreferencesDto {
   @ApiProperty() @IsBoolean() email!: boolean;
   @ApiProperty() @IsBoolean() push!: boolean;
@@ -19,6 +20,7 @@ export class ProfileDto {
   @ApiPropertyOptional()
   @ValidateIf((_object, value) => value !== undefined)
   @IsString()
+  @Trim()
   @MinLength(1)
   @MaxLength(100)
   displayName?: string;
@@ -41,7 +43,7 @@ export class ProfileDto {
 }
 export class ConsentDto {
   @ApiProperty({ enum: ['marketing', 'analytics'] }) @IsIn(['marketing', 'analytics']) purpose!: string;
-  @ApiProperty() @IsString() @MinLength(1) @MaxLength(50) version!: string;
+  @ApiProperty() @Trim() @IsString() @MinLength(1) @MaxLength(50) version!: string;
   @ApiProperty() @IsBoolean() granted!: boolean;
 }
 export class MeDto {

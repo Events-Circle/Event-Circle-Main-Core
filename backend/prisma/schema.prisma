@@ -97,11 +97,12 @@ model Notification {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid()) @db.Uuid
-  actorId   String?  @db.Uuid
-  action    String
-  targetId  String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid()) @db.Uuid
+  actorId       String?  @db.Uuid
+  action        String
+  targetId      String?
+  correlationId String?
+  createdAt     DateTime @default(now())
 
   @@index([actorId, createdAt])
   @@map("core_audit_logs")
@@ -136,17 +137,20 @@ model Membership {
 }
 
 model Supplier {
-  id              String       @id @default(uuid()) @db.Uuid
-  organizationId  String       @unique @db.Uuid
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  businessName    String
-  category        String
-  city            String
-  serviceAreas    String[]
-  acceptInquiries Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                String            @id @default(uuid()) @db.Uuid
+  organizationId    String            @unique @db.Uuid
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessName      String
+  category          String
+  city              String
+  serviceAreas      String[]
+  acceptInquiries   Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  presenceProfiles  PresenceProfile[]
+  leadOpportunities LeadOpportunity[]
 
+  @@unique([id, organizationId])
   @@map("core_suppliers")
 }
 
@@ -159,6 +163,10 @@ model OutboxEvent {
   createdAt      DateTime  @default(now())
   deliveredAt    DateTime?
   attempts       Int       @default(0)
+  nextAttemptAt  DateTime  @default(now())
+  lockedUntil    DateTime?
+  claimToken     String?   @db.Uuid
+  lastError      String?
 
   @@index([deliveredAt, createdAt])
   @@map("core_outbox_events")
@@ -168,6 +176,7 @@ model OutboxEvent {
 model PresenceProfile {
   id          String   @id @default(uuid()) @db.Uuid
   supplierId  String   @unique @db.Uuid
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   slug        String   @unique
   description String   @default("")
   published   Boolean  @default(false)
@@ -189,6 +198,7 @@ model LeadOpportunity {
   id                    String    @id @default(uuid()) @db.Uuid
   organizationId        String    @db.Uuid
   supplierId            String    @db.Uuid
+  supplier              Supplier  @relation(fields: [supplierId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade)
   name                  String
   email                 String?
   phone                 String?

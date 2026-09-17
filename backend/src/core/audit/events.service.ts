@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma } from '../../../generated/client/index.js';
 import { Injectable } from '@nestjs/common';
 import type { DomainEvent } from '@events-circle/contracts';
+import { requestContext } from '../../common/request-context.js';
 /** In-process delivery port. Durable outbox rows are the source for retryable work.
  * No external side-effect consumers are activated in this foundation. */
 @Injectable()
@@ -11,7 +12,7 @@ export class EventsService {
     name: string,
     organizationId: string,
     payload: Prisma.InputJsonValue,
-    correlationId = randomUUID(),
+    correlationId = requestContext.getStore()?.correlationId ?? randomUUID(),
   ) {
     return tx.outboxEvent.create({ data: { name, organizationId, payload, correlationId } });
   }
@@ -23,6 +24,11 @@ export class EventsService {
     return () => list.delete(handler);
   }
   async publish(event: DomainEvent) {
-    for (const handler of this.listeners.get(event.name) ?? []) await handler(event);
+    const handlers = [...(this.listeners.get(event.name) ?? [])];
+    if (!handlers.length) throw new Error('No event consumer registered');
+    for (const handler of handlers) await handler(event);
+  }
+  consumerNames() {
+    return [...this.listeners.entries()].filter(([, handlers]) => handlers.size).map(([name]) => name);
   }
 }

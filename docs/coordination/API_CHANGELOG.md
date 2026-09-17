@@ -1,5 +1,12 @@
 # API changelog
 
+## 2026-09-17 audit repairs
+
+- Leads, sessions, consents, subscriptions and notifications retain array responses and now accept `limit` (1-100) and `cursor` UUID. Read `X-Next-Cursor` for the next page; absent means end. Invalid or foreign-scope cursors return 400. CORS exposes the header.
+- Lead response DTO now explicitly includes nullable email/phone/campaign and createdAt/updatedAt timestamps. Request fields remain independently validated.
+- Blank supplier/profile/lead/consent text and punctuation-only phone numbers now return 400; supported input is trimmed. Phone policy: 7-15 digits, optional leading + and formatting separators, up to 30 characters.
+- API request correlation is persisted in new audit entries and outbox rows. No API action enables external event consumers.
+
 ## 0.2.0 — 2026-09-16 (breaking, pre-release)
 
 - One API at port 4000 replaces Core 4000 and Growth 4001.

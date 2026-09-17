@@ -1,0 +1,7 @@
+BEGIN;
+ALTER TABLE "core_outbox_events"
+  ADD COLUMN "nextAttemptAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN "lockedUntil" TIMESTAMP(3),
+  ADD COLUMN "claimToken" UUID,
+  ADD COLUMN "lastError" TEXT;
+COMMIT;

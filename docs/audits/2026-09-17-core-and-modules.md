@@ -1,5 +1,7 @@
 # Core and module verification - 17 September 2026
 
+Historical baseline. See `2026-09-17-remediation.md` for subsequent fixes and verification; the results below describe the original audited commit.
+
 ## Verdict and scope
 
 Audited main commit: `e3b0c5cbbaf3252bca78d5235c3d18f3630b7f5f` (source tree `7a0fbb1eda99807aa1c025c8ecf484cd1b32d6b2`).

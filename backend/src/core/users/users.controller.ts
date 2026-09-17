@@ -9,9 +9,13 @@ import {
   UseGuards,
   ParseUUIDPipe,
   HttpCode,
+  Query,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import type { Identity } from '@events-circle/types';
+import type { Response } from 'express';
+import { PageQuery, pageResponse, pageHeaders } from '../../common/pagination.js';
 import { Actor, AuthGuard } from '../auth/auth.guard.js';
 import { AuthService } from '../auth/auth.service.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
@@ -46,8 +50,12 @@ export class UsersController {
   @Get('memberships') @ApiOkResponse({ type: [MembershipDto] }) memberships(@Actor() a: Identity) {
     return this.users.memberships(a.userId);
   }
-  @Get('sessions') @ApiOkResponse({ type: [SessionDto] }) sessions(@Actor() a: Identity) {
-    return this.users.sessions(a.userId);
+  @Get('sessions') @ApiOkResponse({ type: [SessionDto], headers: pageHeaders }) async sessions(
+    @Actor() a: Identity,
+    @Query() query: PageQuery,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return pageResponse(await this.users.sessions(a.userId, query), response);
   }
   @Delete('sessions/:id') @HttpCode(204) revoke(
     @Actor() a: Identity,
@@ -55,8 +63,12 @@ export class UsersController {
   ) {
     return this.auth.revoke(a.userId, id);
   }
-  @Get('consents') @ApiOkResponse({ type: [ConsentResponseDto] }) consents(@Actor() a: Identity) {
-    return this.users.consents(a.userId);
+  @Get('consents') @ApiOkResponse({ type: [ConsentResponseDto], headers: pageHeaders }) async consents(
+    @Actor() a: Identity,
+    @Query() query: PageQuery,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return pageResponse(await this.users.consents(a.userId, query), response);
   }
   @Post('consents') @ApiCreatedResponse({ type: ConsentResponseDto }) consent(
     @Actor() a: Identity,
@@ -64,16 +76,24 @@ export class UsersController {
   ) {
     return this.users.consent(a.userId, data);
   }
-  @Get('subscriptions') @ApiOkResponse({ type: [SubscriptionDto] }) subscriptions(@Actor() a: Identity) {
-    return this.users.subscriptions(a.userId);
+  @Get('subscriptions') @ApiOkResponse({ type: [SubscriptionDto], headers: pageHeaders }) async subscriptions(
+    @Actor() a: Identity,
+    @Query() query: PageQuery,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return pageResponse(await this.users.subscriptions(a.userId, query), response);
   }
   @Get('access')
   @ApiOkResponse({ type: AccessDto })
   access(@Actor() a: Identity) {
     return this.permissions.access(a.userId);
   }
-  @Get('notifications') @ApiOkResponse({ type: [NotificationDto] }) notifications(@Actor() a: Identity) {
-    return this.users.notifications(a.userId);
+  @Get('notifications') @ApiOkResponse({ type: [NotificationDto], headers: pageHeaders }) async notifications(
+    @Actor() a: Identity,
+    @Query() query: PageQuery,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return pageResponse(await this.users.notifications(a.userId, query), response);
   }
   @Patch('notifications/:id/read') @HttpCode(204) read(
     @Actor() a: Identity,
