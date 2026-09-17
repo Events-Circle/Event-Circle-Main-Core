@@ -1,5 +1,11 @@
 # API changelog
 
+## 2026-09-17 Presence domain/contracts increment
+
+- Add shared lifecycle, pricing, readiness and planned event/query contracts. Preserve the existing profile-updated V1 event and payload.
+- No new HTTP endpoints or changes to current profile behavior. Domain rules and the Core media port are preparation for the expanded backend; their types do not indicate live implementations.
+- Frontend implementation is scheduled for a separate module repository after backend contract acceptance. See `docs/presence-backend-plan.md`.
+
 ## 2026-09-17 audit repairs
 
 - Leads, sessions, consents, subscriptions and notifications retain array responses and now accept `limit` (1-100) and `cursor` UUID. Read `X-Next-Cursor` for the next page; absent means end. Invalid or foreign-scope cursors return 400. CORS exposes the header.

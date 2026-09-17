@@ -17,3 +17,4 @@ export const eventNames = {
   leadStageChanged: 'leads.stage.changed.v1',
   presenceUpdated: 'presence.profile.updated.v1',
 } as const;
+export * from './presence.js';
