@@ -16,6 +16,12 @@ for (const file of files) {
   const source = await readFile(file, 'utf8');
   const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
   const owner = file.match(/^backend\/src\/modules\/([^/]+)/)?.[1];
+  if (owner && owner !== 'circle-ai' && /\.circleAiPlan\./.test(source))
+    failures.push(`${file}: foreign module accesses Circle AI table`);
+  if (owner === 'circle-ai' && /\.(presenceProfile|presenceContent|leadOpportunity)\./.test(source))
+    failures.push(`${file}: Circle AI accesses a foreign module table`);
+  if (owner === 'circle-ai' && !file.includes('/infrastructure/') && /\.circleAiPlan\./.test(source))
+    failures.push(`${file}: Circle AI persistence outside infrastructure`);
   function visit(node) {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       const spec = node.moduleSpecifier;

@@ -1,5 +1,7 @@
 # Dependency register
 
+Circle AI planning foundation (2026-09-18): Core auth/permissions/audit/outbox reused. Business Brain, model gateway, Leads summary contracts, Content execution, Promotions and Connections remain blocking dependencies for live AI/side effects. The first slice stores drafts and decisions only.
+
 | Consumer                         | Dependency                                                   | Status                                                                      |
 | -------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | All modules                      | Core identity, permissions, supplier identity, audit/outbox  | Implemented foundation                                                      |
