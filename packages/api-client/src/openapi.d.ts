@@ -660,6 +660,70 @@ export interface paths {
         patch: operations["LeadsController_update"];
         trace?: never;
     };
+    "/api/v1/circle-ai/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CircleAiController_brief"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/circle-ai/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CircleAiController_list"];
+        put?: never;
+        post: operations["CircleAiController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/circle-ai/plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["CircleAiController_edit"];
+        trace?: never;
+    };
+    "/api/v1/circle-ai/plans/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CircleAiController_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1025,6 +1089,49 @@ export interface components {
         StageDto: {
             /** @enum {string} */
             stage: "NEW" | "HOT" | "FOLLOW_UP" | "QUALIFIED" | "WON" | "LOST";
+        };
+        BriefDto: {
+            providerReady: boolean;
+            executionReady: boolean;
+            draftCount: number;
+            approvedCount: number;
+            rejectedCount: number;
+            notice: string;
+        };
+        PlanDto: {
+            id: string;
+            kind: string;
+            prompt: string;
+            title: string;
+            response: string;
+            draft: string;
+            blockedReason: string;
+            /** @enum {string} */
+            status: "DRAFT" | "APPROVED" | "REJECTED";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        RequestDto: {
+            /**
+             * Format: uuid
+             * @description Client request ID; retries must reuse the same ID and body.
+             */
+            requestId: string;
+            /** @enum {string} */
+            kind: "GROW_LEADS" | "PLAN_WEEK" | "REPLY_LEADS" | "CREATE_POST" | "PROMOTE_LISTING" | "GENERAL";
+            prompt: string;
+        };
+        EditPlanDto: {
+            version: number;
+            draft: string;
+        };
+        DecisionDto: {
+            version: number;
+            /** @enum {string} */
+            decision: "APPROVED" | "REJECTED";
         };
     };
     responses: never;
@@ -2188,6 +2295,137 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadResponseDto"];
+                };
+            };
+        };
+    };
+    CircleAiController_brief: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefDto"];
+                };
+            };
+        };
+    };
+    CircleAiController_list: {
+        parameters: {
+            query?: {
+                limit?: components["schemas"]["Object"];
+                cursor?: string;
+            };
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    /** @description Pass as cursor to retrieve the next page. Absent on the last page. */
+                    "X-Next-Cursor"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDto"][];
+                };
+            };
+        };
+    };
+    CircleAiController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDto"];
+                };
+            };
+        };
+    };
+    CircleAiController_edit: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDto"];
+                };
+            };
+        };
+    };
+    CircleAiController_decide: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Organization-Id": string;
+                "x-organization-id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDto"];
                 };
             };
         };

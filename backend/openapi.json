@@ -2288,6 +2288,301 @@
           "leads"
         ]
       }
+    },
+    "/api/v1/circle-ai/brief": {
+      "get": {
+        "operationId": "CircleAiController_brief",
+        "parameters": [
+          {
+            "name": "X-Organization-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "circle-ai"
+        ]
+      }
+    },
+    "/api/v1/circle-ai/plans": {
+      "get": {
+        "operationId": "CircleAiController_list",
+        "parameters": [
+          {
+            "name": "X-Organization-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "headers": {
+              "X-Next-Cursor": {
+                "description": "Pass as cursor to retrieve the next page. Absent on the last page.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "circle-ai"
+        ]
+      },
+      "post": {
+        "operationId": "CircleAiController_create",
+        "parameters": [
+          {
+            "name": "X-Organization-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "circle-ai"
+        ]
+      }
+    },
+    "/api/v1/circle-ai/plans/{id}": {
+      "patch": {
+        "operationId": "CircleAiController_edit",
+        "parameters": [
+          {
+            "name": "X-Organization-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "circle-ai"
+        ]
+      }
+    },
+    "/api/v1/circle-ai/plans/{id}/decision": {
+      "post": {
+        "operationId": "CircleAiController_decide",
+        "parameters": [
+          {
+            "name": "X-Organization-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "circle-ai"
+        ]
+      }
     }
   },
   "info": {
@@ -3782,6 +4077,161 @@
         },
         "required": [
           "stage"
+        ]
+      },
+      "BriefDto": {
+        "type": "object",
+        "properties": {
+          "providerReady": {
+            "type": "boolean"
+          },
+          "executionReady": {
+            "type": "boolean"
+          },
+          "draftCount": {
+            "type": "number"
+          },
+          "approvedCount": {
+            "type": "number"
+          },
+          "rejectedCount": {
+            "type": "number"
+          },
+          "notice": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "providerReady",
+          "executionReady",
+          "draftCount",
+          "approvedCount",
+          "rejectedCount",
+          "notice"
+        ]
+      },
+      "PlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "response": {
+            "type": "string"
+          },
+          "draft": {
+            "type": "string"
+          },
+          "blockedReason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "version": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "prompt",
+          "title",
+          "response",
+          "draft",
+          "blockedReason",
+          "status",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RequestDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client request ID; retries must reuse the same ID and body."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "GROW_LEADS",
+              "PLAN_WEEK",
+              "REPLY_LEADS",
+              "CREATE_POST",
+              "PROMOTE_LISTING",
+              "GENERAL"
+            ]
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "requestId",
+          "kind",
+          "prompt"
+        ]
+      },
+      "EditPlanDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number"
+          },
+          "draft": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "version",
+          "draft"
+        ]
+      },
+      "DecisionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "decision"
         ]
       }
     }

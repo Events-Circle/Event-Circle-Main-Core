@@ -12,7 +12,7 @@ const app = await createApp({
   cors: [],
   trustProxy: [],
   edition: 'growth-os',
-  enabled: ['presence', 'leads'],
+  enabled: ['presence', 'leads', 'circle-ai'],
 });
 await writeFile('openapi.json', JSON.stringify(specification(app), null, 2) + '\n');
 await app.close();

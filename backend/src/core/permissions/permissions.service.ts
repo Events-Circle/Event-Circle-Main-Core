@@ -4,6 +4,9 @@ import { Database } from '../../common/database.js';
 import { RUNTIME, type Runtime } from '../../config/runtime.js';
 const rolePermissions: Record<string, string[]> = {
   OWNER: [
+    'circle-ai.read',
+    'circle-ai.write',
+    'circle-ai.approve',
     'suppliers.read',
     'suppliers.write',
     'presence.read',
@@ -14,6 +17,8 @@ const rolePermissions: Record<string, string[]> = {
     'media.write',
   ],
   EDITOR: [
+    'circle-ai.read',
+    'circle-ai.write',
     'suppliers.read',
     'presence.read',
     'presence.write',
@@ -22,7 +27,7 @@ const rolePermissions: Record<string, string[]> = {
     'media.read',
     'media.write',
   ],
-  VIEWER: ['suppliers.read', 'presence.read', 'leads.read', 'media.read'],
+  VIEWER: ['suppliers.read', 'presence.read', 'leads.read', 'media.read', 'circle-ai.read'],
 };
 @Injectable()
 export class PermissionsService {
@@ -56,6 +61,9 @@ export class PermissionsService {
       features: [
         ...new Set([
           'presence.read',
+          'circle-ai.read',
+          'circle-ai.write',
+          'circle-ai.approve',
           'presence.write',
           'leads.read',
           'leads.write',

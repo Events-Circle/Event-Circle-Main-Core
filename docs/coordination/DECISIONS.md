@@ -1,5 +1,7 @@
 # Decisions
 
+- 2026-09-18: Circle AI starts as explicitly non-generative planning intake until Core AI gateway/provider and business context are approved. Owner plan approval is not execution consent; future publishing/spending requires a new exact-resource approval. Separate frontend reuses Presence auth; backend stays in Main Core.
+
 - 2026-09-17: repair audited foundation before new modules. Preserve array list contracts through cursor query parameters and X-Next-Cursor. Normalize meaningful text; represent nullable responses truthfully.
 - 2026-09-17: enforce module-to-supplier ownership with database foreign keys, including Lead supplier/organization consistency. Restrict deletion while module records remain. Invalid historical references block migration; no automatic customer-data deletion or guessed ownership.
 - 2026-09-17: outbox dispatcher is opt-in and at least once. Consumers deduplicate on event ID, use bounded timeouts, and are explicitly registered. No-consumer events remain pending; ten attempts require operator review. External automation remains unimplemented.

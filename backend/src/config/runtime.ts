@@ -1,6 +1,7 @@
 import growthOs from './editions/growth-os.js';
 import presence from './editions/circle-presence.js';
 import leads from './editions/circle-leads.js';
+import circleAi from './editions/circle-ai.js';
 export type Runtime = {
   nodeEnv: string;
   host: string;
@@ -23,7 +24,7 @@ export type Runtime = {
   storageBucket?: string;
   publicWebUrl?: string;
 };
-export const availableModules = ['presence', 'leads'] as const;
+export const availableModules = ['presence', 'leads', 'circle-ai'] as const;
 export const moduleCatalog = [
   'presence',
   'content',
@@ -42,7 +43,7 @@ export function runtime(env: NodeJS.ProcessEnv = process.env): Runtime {
   };
   const edition = env.EDITION ?? 'growth-os';
   const editions: Record<string, readonly string[]> = Object.fromEntries(
-    [growthOs, presence, leads].map((e) => [e.id, e.modules]),
+    [growthOs, presence, leads, circleAi].map((e) => [e.id, e.modules]),
   );
   const allowed = editions[edition];
   if (!allowed) throw new Error('Edition is not implemented');

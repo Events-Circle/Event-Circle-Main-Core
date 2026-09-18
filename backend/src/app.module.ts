@@ -4,6 +4,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CoreModule } from './core/core.module.js';
 import { PresenceModule } from './modules/presence/presence.module.js';
 import { LeadsModule } from './modules/leads/leads.module.js';
+import { CircleAiModule } from './modules/circle-ai/circle-ai.module.js';
 import type { Runtime } from './config/runtime.js';
 @Module({})
 export class AppModule {
@@ -15,6 +16,7 @@ export class AppModule {
         ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
         ...(config.enabled.includes('presence') ? [PresenceModule] : []),
         ...(config.enabled.includes('leads') ? [LeadsModule] : []),
+        ...(config.enabled.includes('circle-ai') ? [CircleAiModule] : []),
       ],
       providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
     };
