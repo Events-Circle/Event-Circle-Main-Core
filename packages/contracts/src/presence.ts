@@ -5,6 +5,8 @@ export const listingTypes = ['SERVICE', 'PRODUCT', 'PACKAGE', 'OFFER'] as const;
 export type ListingType = (typeof listingTypes)[number];
 export const pricingModes = ['FIXED', 'FROM', 'ON_REQUEST', 'FREE'] as const;
 export type PricingMode = (typeof pricingModes)[number];
+export const priceUnits = ['EVENT', 'HOUR', 'PERSON', 'PACKAGE', 'ITEM', 'TOTAL'] as const;
+export type PriceUnit = (typeof priceUnits)[number];
 export type MediaRole = 'COVER' | 'GALLERY';
 export interface PresenceMediaReference {
   mediaId: string;

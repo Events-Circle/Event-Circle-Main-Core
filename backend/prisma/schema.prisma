@@ -288,6 +288,9 @@ model PresenceContent {
   occurredAt       DateTime?
   type             PresenceListingType?
   pricingMode      PresencePricingMode?
+  priceUnit        String?
+  inclusions       String[]             @default([])
+  pricingNote      String               @default("")
   amountMinor      Int?
   currency         String?
   validFrom        DateTime?

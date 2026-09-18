@@ -20,8 +20,8 @@ import {
 } from 'class-validator';
 import { Trim } from '../../../common/trim.js';
 import { PageQuery } from '../../../common/pagination.js';
-import { listingTypes, pricingModes } from '@events-circle/contracts';
-import type { ListingType, PricingMode } from '@events-circle/contracts';
+import { listingTypes, pricingModes, priceUnits } from '@events-circle/contracts';
+import type { ListingType, PricingMode, PriceUnit } from '@events-circle/contracts';
 export const collections = { portfolio: 'portfolio', listings: 'listings', gallery: 'gallery' } as const;
 export type Collection = keyof typeof collections;
 export class MediaReferenceDto {
@@ -53,6 +53,34 @@ export class ContentWriteDto {
   @ValidateIf((_, v) => v !== undefined)
   @IsIn(pricingModes)
   pricingMode?: PricingMode;
+  @ApiPropertyOptional({
+    enum: priceUnits,
+    nullable: true,
+    description: 'Price basis. Null means unspecified for compatibility with existing listings.',
+  })
+  @IsOptional()
+  @IsIn(priceUnits)
+  priceUnit?: PriceUnit | null;
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Up to 20 ordered inclusions, 200 characters each. Omit to preserve; [] clears.',
+  })
+  @ValidateIf((_, v) => v !== undefined)
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(200, { each: true })
+  inclusions?: string[];
+  @ApiPropertyOptional({
+    description:
+      'Optional pricing conditions, such as minimum guest count or extra travel fees. Omit to preserve; empty string clears.',
+  })
+  @ValidateIf((_, v) => v !== undefined)
+  @Trim()
+  @IsString()
+  @MaxLength(500)
+  pricingNote?: string;
   @ApiPropertyOptional({ nullable: true, type: Number })
   @IsOptional()
   @IsInt()
@@ -102,6 +130,9 @@ export class PublicContentDto {
   @ApiProperty({ nullable: true, type: String }) occurredAt!: string | null;
   @ApiProperty({ enum: listingTypes, nullable: true }) type!: string | null;
   @ApiProperty({ enum: pricingModes, nullable: true }) pricingMode!: string | null;
+  @ApiProperty({ enum: priceUnits, nullable: true }) priceUnit!: string | null;
+  @ApiProperty({ type: [String] }) inclusions!: string[];
+  @ApiProperty() pricingNote!: string;
   @ApiProperty({ nullable: true, type: Number }) amountMinor!: number | null;
   @ApiProperty({ nullable: true, type: String }) currency!: string | null;
   @ApiProperty({ nullable: true, type: String }) validFrom!: string | null;

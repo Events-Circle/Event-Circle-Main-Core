@@ -3363,6 +3363,27 @@
             ],
             "nullable": true
           },
+          "priceUnit": {
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "HOUR",
+              "PERSON",
+              "PACKAGE",
+              "ITEM",
+              "TOTAL"
+            ],
+            "nullable": true
+          },
+          "inclusions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pricingNote": {
+            "type": "string"
+          },
           "amountMinor": {
             "type": "number",
             "nullable": true
@@ -3411,6 +3432,9 @@
           "occurredAt",
           "type",
           "pricingMode",
+          "priceUnit",
+          "inclusions",
+          "pricingNote",
           "amountMinor",
           "currency",
           "validFrom",
@@ -3570,6 +3594,27 @@
             ],
             "nullable": true
           },
+          "priceUnit": {
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "HOUR",
+              "PERSON",
+              "PACKAGE",
+              "ITEM",
+              "TOTAL"
+            ],
+            "nullable": true
+          },
+          "inclusions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pricingNote": {
+            "type": "string"
+          },
           "amountMinor": {
             "type": "number",
             "nullable": true
@@ -3651,6 +3696,9 @@
           "occurredAt",
           "type",
           "pricingMode",
+          "priceUnit",
+          "inclusions",
+          "pricingNote",
           "amountMinor",
           "currency",
           "validFrom",
@@ -3710,6 +3758,30 @@
               "ON_REQUEST",
               "FREE"
             ]
+          },
+          "priceUnit": {
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "HOUR",
+              "PERSON",
+              "PACKAGE",
+              "ITEM",
+              "TOTAL"
+            ],
+            "nullable": true,
+            "description": "Price basis. Null means unspecified for compatibility with existing listings."
+          },
+          "inclusions": {
+            "description": "Up to 20 ordered inclusions, 200 characters each. Omit to preserve; [] clears.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pricingNote": {
+            "type": "string",
+            "description": "Optional pricing conditions, such as minimum guest count or extra travel fees. Omit to preserve; empty string clears."
           },
           "amountMinor": {
             "type": "number",

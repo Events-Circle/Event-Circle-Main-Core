@@ -943,6 +943,10 @@ export interface components {
             type: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER" | null;
             /** @enum {string|null} */
             pricingMode: "FIXED" | "FROM" | "ON_REQUEST" | "FREE" | null;
+            /** @enum {string|null} */
+            priceUnit: "EVENT" | "HOUR" | "PERSON" | "PACKAGE" | "ITEM" | "TOTAL" | null;
+            inclusions: string[];
+            pricingNote: string;
             amountMinor: number | null;
             currency: string | null;
             validFrom: string | null;
@@ -986,6 +990,10 @@ export interface components {
             type: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER" | null;
             /** @enum {string|null} */
             pricingMode: "FIXED" | "FROM" | "ON_REQUEST" | "FREE" | null;
+            /** @enum {string|null} */
+            priceUnit: "EVENT" | "HOUR" | "PERSON" | "PACKAGE" | "ITEM" | "TOTAL" | null;
+            inclusions: string[];
+            pricingNote: string;
             amountMinor: number | null;
             currency: string | null;
             validFrom: string | null;
@@ -1016,6 +1024,15 @@ export interface components {
             type?: "SERVICE" | "PRODUCT" | "PACKAGE" | "OFFER";
             /** @enum {string} */
             pricingMode?: "FIXED" | "FROM" | "ON_REQUEST" | "FREE";
+            /**
+             * @description Price basis. Null means unspecified for compatibility with existing listings.
+             * @enum {string|null}
+             */
+            priceUnit?: "EVENT" | "HOUR" | "PERSON" | "PACKAGE" | "ITEM" | "TOTAL" | null;
+            /** @description Up to 20 ordered inclusions, 200 characters each. Omit to preserve; [] clears. */
+            inclusions?: string[];
+            /** @description Optional pricing conditions, such as minimum guest count or extra travel fees. Omit to preserve; empty string clears. */
+            pricingNote?: string;
             amountMinor?: number | null;
             currency?: string | null;
             validFrom?: string | null;

@@ -33,3 +33,11 @@
 - Old routes and the context-copy script are removed. Monorepo shared packages replace copied backend contexts.
 
 Regenerate OpenAPI and api-client declarations with every API change. Coordinate consumer changes in the same PR.
+
+## 2026-09-18 — Presence package pricing (Step 3)
+
+Presence listing writes accept optional `priceUnit` (`EVENT`, `HOUR`, `PERSON`, `PACKAGE`, `ITEM`, `TOTAL`, or null), ordered `inclusions` (up to 20 distinct, nonblank strings of up to 200 characters), and `pricingNote` (up to 500 characters). Management and public listing responses include these fields. They belong to Presence, not shared supplier identity or billing.
+
+The additive migration leaves existing units unspecified, with empty inclusions/notes. Omitted new fields preserve existing values; explicit null clears the unit, [] clears inclusions, and an empty string clears the note. Quote/free modes clear the stored unit and reject an explicitly supplied non-null unit. Portfolio/gallery writes reject listing-only fields. Existing tenant checks, version conflicts, publication readiness, and public visibility remain authoritative. These are advertised prices, not checkout or booking functionality.
+
+Validation: all 44 backend tests pass, including migrations, ordered inclusion normalization, bounds, rejection of duplicate/invalid values, old-client preservation, explicit clearing, stale versions and public responses.

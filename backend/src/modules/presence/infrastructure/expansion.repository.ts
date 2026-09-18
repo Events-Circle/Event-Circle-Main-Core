@@ -219,11 +219,34 @@ export class PresenceRepository {
     if (data.locationId) await this.catalogs.require(data.locationId, 'LOCATION', tx);
     if (
       kind !== 'LISTING' &&
-      [data.type, data.pricingMode, data.amountMinor, data.currency, data.validFrom, data.validUntil].some(
-        (v) => v != null,
-      )
+      [
+        data.type,
+        data.pricingMode,
+        data.amountMinor,
+        data.currency,
+        data.validFrom,
+        data.validUntil,
+        data.priceUnit,
+        data.inclusions,
+        data.pricingNote,
+      ].some((v) => v != null)
     )
       throw new BadRequestException();
+    if (kind === 'LISTING' && data.inclusions !== undefined) {
+      const normalized = data.inclusions.map((value) => value.trim());
+      if (
+        normalized.some((value) => !value) ||
+        new Set(normalized.map((value) => value.toLowerCase())).size !== normalized.length
+      )
+        throw new BadRequestException('Use distinct, non-empty inclusions.');
+      data.inclusions = normalized;
+    }
+    if (
+      kind === 'LISTING' &&
+      !['FIXED', 'FROM'].includes(data.pricingMode ?? 'ON_REQUEST') &&
+      data.priceUnit != null
+    )
+      throw new BadRequestException('Price units apply only to fixed or starting prices.');
     if (kind === 'LISTING')
       policy(() => {
         validatePrice({
@@ -295,6 +318,15 @@ export class PresenceRepository {
         occurredAt: rest.occurredAt ? new Date(rest.occurredAt) : null,
         type: kind === 'LISTING' ? (rest.type ?? 'SERVICE') : null,
         pricingMode: kind === 'LISTING' ? (rest.pricingMode ?? 'ON_REQUEST') : null,
+        // Preserve these additive fields when older clients omit them.
+        priceUnit:
+          kind === 'LISTING' && ['FIXED', 'FROM'].includes(rest.pricingMode ?? 'ON_REQUEST')
+            ? rest.priceUnit === undefined
+              ? (old?.priceUnit ?? null)
+              : rest.priceUnit
+            : null,
+        inclusions: rest.inclusions ?? old?.inclusions ?? [],
+        pricingNote: rest.pricingNote ?? old?.pricingNote ?? '',
         amountMinor: rest.amountMinor ?? null,
         currency: rest.currency ?? null,
         validFrom: rest.validFrom ? new Date(rest.validFrom) : null,
@@ -342,6 +374,9 @@ export class PresenceRepository {
       type,
       pricingMode,
       amountMinor,
+      priceUnit,
+      inclusions,
+      pricingNote,
       currency,
       validFrom,
       validUntil,
@@ -361,6 +396,9 @@ export class PresenceRepository {
       type,
       pricingMode,
       amountMinor,
+      priceUnit,
+      inclusions,
+      pricingNote,
       currency,
       validFrom,
       validUntil,

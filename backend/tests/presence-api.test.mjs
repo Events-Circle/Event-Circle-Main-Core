@@ -311,6 +311,75 @@ test('create, publish, public aggregate, private drafts and inquiry handoff form
     (await api().get('/api/v1/leads').set(auth()).expect(200)).body.some((row) => row.id === lead.id),
   ).toBe(true);
 });
+test('listing package details survive old clients, validate input, and appear in public responses', async () => {
+  expect(listing.priceUnit).toBeNull();
+  expect(listing.inclusions).toEqual([]);
+  const base = { ...payload(), type: 'PACKAGE', pricingMode: 'FROM', amountMinor: 2500, currency: 'USD' };
+  const save = (extra = {}, version = listing.version) =>
+    api()
+      .put(path('listings', listing.id))
+      .set(auth())
+      .send({ ...base, version, ...extra });
+  const stale = listing.version;
+  listing = (
+    await save({
+      priceUnit: 'PERSON',
+      inclusions: ['  Welcome drinks  ', 'Three-course meal'],
+      pricingNote: 'Minimum 40 guests.',
+    }).expect(200)
+  ).body;
+  expect(listing.inclusions).toEqual(['Welcome drinks', 'Three-course meal']);
+  const publicItem = (await api().get(pub('listings', listing.id)).expect(200)).body;
+  expect(publicItem).toMatchObject({
+    priceUnit: 'PERSON',
+    inclusions: listing.inclusions,
+    pricingNote: 'Minimum 40 guests.',
+  });
+  expect((await api().get(`/api/v1/presence/public/${slug}`).expect(200)).body.listings[0].priceUnit).toBe(
+    'PERSON',
+  );
+  await save({ priceUnit: 'EVENT' }, stale).expect(409);
+  for (const invalid of [
+    { priceUnit: 'DAY' },
+    { priceUnit: 1 },
+    { inclusions: null },
+    { inclusions: 'Dinner' },
+    { inclusions: [' '] },
+    { inclusions: ['Dinner', ' dinner '] },
+    { inclusions: [42] },
+    { inclusions: ['x'.repeat(201)] },
+    { inclusions: Array.from({ length: 21 }, (_, i) => String(i)) },
+    { pricingNote: null },
+    { pricingNote: 'x'.repeat(501) },
+    { pricingMode: 'FREE', amountMinor: null, currency: null, priceUnit: 'HOUR' },
+  ])
+    await save(invalid).expect(400);
+  const preserved = (await api().get(path('listings', listing.id)).set(auth()).expect(200)).body;
+  expect(preserved.version).toBe(listing.version);
+  listing = (await save().expect(200)).body;
+  expect(listing).toMatchObject({
+    priceUnit: 'PERSON',
+    inclusions: ['Welcome drinks', 'Three-course meal'],
+    pricingNote: 'Minimum 40 guests.',
+  });
+  for (const priceUnit of ['EVENT', 'HOUR', 'PERSON', 'PACKAGE', 'ITEM', 'TOTAL']) {
+    listing = (await save({ priceUnit }).expect(200)).body;
+    expect(listing.priceUnit).toBe(priceUnit);
+  }
+  listing = (await save({ pricingMode: 'ON_REQUEST', amountMinor: null, currency: null }).expect(200)).body;
+  expect(listing.priceUnit).toBeNull();
+  expect(listing.inclusions).toHaveLength(2);
+  listing = (await save({ priceUnit: null, inclusions: [], pricingNote: '' }).expect(200)).body;
+  expect(listing).toMatchObject({ priceUnit: null, inclusions: [], pricingNote: '' });
+  for (const collection of ['portfolio', 'gallery']) {
+    for (const extra of [{ priceUnit: 'EVENT' }, { inclusions: ['Dinner'] }, { pricingNote: 'Extra fees' }])
+      await api()
+        .post(path(collection))
+        .set(auth())
+        .send({ ...payload(), ...extra })
+        .expect(400);
+  }
+});
 test('tenant isolation masks guessed IDs and rejects foreign media/reorder; stale edits conflict', async () => {
   await api()
     .put('/api/v1/presence/profile')
