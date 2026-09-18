@@ -1,3 +1,5 @@
+import { detailTypes } from '../domain/category-details.js';
+import { DetailTypeDto } from './category-details.dto.js';
 import { Controller, Get, Put, Post, Body, Headers, Param, UseGuards, Res } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { Response } from 'express';
@@ -17,6 +19,11 @@ import { VersionDto } from './content.dto.js';
 @Controller('presence')
 export class PresenceController {
   constructor(private presence: PresenceService) {}
+  @Get('detail-types')
+  @ApiOkResponse({ type: [DetailTypeDto] })
+  detailTypes() {
+    return detailTypes;
+  }
   @Get('readiness')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()

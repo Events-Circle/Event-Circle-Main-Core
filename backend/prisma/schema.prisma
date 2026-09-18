@@ -201,6 +201,7 @@ model PresenceProfile {
   accentColor    String     @default("#2563eb")
   socialLinks    Json       @default("[]")
   openingHours   Json       @default("[]")
+  categoryDetails Json      @default("{\"type\":\"GENERAL\",\"values\":{}}")
   sections       String[]   @default(["portfolio", "listings", "gallery"])
   publishedAt    DateTime?
   version        Int        @default(1)

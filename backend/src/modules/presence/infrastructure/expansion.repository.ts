@@ -1,3 +1,4 @@
+import { validateCategoryDetails } from '../domain/category-details.js';
 import {
   Injectable,
   NotFoundException,
@@ -104,11 +105,18 @@ export class PresenceRepository {
     });
   }
   async save(actor: string, org: string, supplierId: string, data: PresenceDto) {
+    if (data.categoryDetails !== undefined) {
+      try {
+        data.categoryDetails = validateCategoryDetails(data.categoryDetails);
+      } catch (error) {
+        throw new BadRequestException((error as Error).message);
+      }
+    }
     return this.db.$transaction(async (tx) => {
       const old = await tx.presenceProfile.findUnique({ where: { supplierId } });
       if (old && data.version !== undefined && old.version !== data.version) throw new ConflictException();
       const slug = policy(() => normalizeSlug(data.slug));
-      const { version: _version, socialLinks, openingHours, ...inputFields } = data;
+      const { version: _version, socialLinks, openingHours, categoryDetails, ...inputFields } = data;
       // DTO instances have undefined optional own-properties. They must not erase
       // previously saved values when evaluating a partial profile update.
       const fields = Object.fromEntries(
@@ -141,6 +149,7 @@ export class PresenceRepository {
       }
       const patch = {
         ...fields,
+        ...(categoryDetails ? { categoryDetails: json(categoryDetails) } : {}),
         slug,
         ...(socialLinks ? { socialLinks: json(socialLinks) } : {}),
         ...(openingHours ? { openingHours: json(openingHours) } : {}),

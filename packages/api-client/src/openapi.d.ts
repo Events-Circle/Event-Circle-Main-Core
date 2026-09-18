@@ -372,6 +372,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/presence/detail-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PresenceController_detailTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/presence/readiness": {
         parameters: {
             query?: never;
@@ -810,6 +826,23 @@ export interface components {
             label: string;
             active: boolean;
         };
+        DetailFieldDto: {
+            key: string;
+            label: string;
+            /** @enum {string} */
+            kind: "number" | "select" | "multi" | "boolean" | "text";
+            hint: string;
+            options?: string[];
+            min?: number;
+            max?: number;
+            unit?: string;
+        };
+        DetailTypeDto: {
+            id: string;
+            label: string;
+            categories: string[];
+            fields: components["schemas"]["DetailFieldDto"][];
+        };
         ReadinessDto: {
             ready: boolean;
             missing: string[];
@@ -817,6 +850,14 @@ export interface components {
         };
         VersionDto: {
             version: number;
+        };
+        CategoryDetailsDto: {
+            /** @enum {string} */
+            type: "VENUE" | "PHOTO_VIDEO" | "CATERING" | "ENTERTAINMENT" | "GENERAL";
+            /** @description Only keys and values defined by GET /presence/detail-types are accepted. Omit unanswered fields. Sending an empty object clears the values. */
+            values: {
+                [key: string]: string | number | boolean | string[];
+            };
         };
         SocialLinkDto: {
             /** @enum {string} */
@@ -830,6 +871,7 @@ export interface components {
             closes?: string;
         };
         PresenceResponseDto: {
+            categoryDetails?: components["schemas"]["CategoryDetailsDto"];
             showEmail?: boolean;
             showPhone?: boolean;
             slug: string;
@@ -856,6 +898,7 @@ export interface components {
             description: string;
         };
         PresenceDto: {
+            categoryDetails?: components["schemas"]["CategoryDetailsDto"];
             showEmail?: boolean;
             showPhone?: boolean;
             slug: string;
@@ -911,6 +954,7 @@ export interface components {
             media: components["schemas"]["MediaReferenceDto"][];
         };
         PublicPresenceDto: {
+            categoryDetails: components["schemas"]["CategoryDetailsDto"];
             slug: string;
             description: string;
             supplier: components["schemas"]["PublicSupplierDto"];
@@ -1615,6 +1659,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogResponseDto"][];
+                };
+            };
+        };
+    };
+    PresenceController_detailTypes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailTypeDto"][];
                 };
             };
         };

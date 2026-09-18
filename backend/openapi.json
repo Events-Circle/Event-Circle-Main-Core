@@ -1012,6 +1012,30 @@
         ]
       }
     },
+    "/api/v1/presence/detail-types": {
+      "get": {
+        "operationId": "PresenceController_detailTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DetailTypeDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "presence"
+        ]
+      }
+    },
     "/api/v1/presence/readiness": {
       "get": {
         "operationId": "PresenceController_readiness",
@@ -2860,6 +2884,80 @@
           "active"
         ]
       },
+      "DetailFieldDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "number",
+              "select",
+              "multi",
+              "boolean",
+              "text"
+            ]
+          },
+          "hint": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "kind",
+          "hint"
+        ]
+      },
+      "DetailTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailFieldDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "categories",
+          "fields"
+        ]
+      },
       "ReadinessDto": {
         "type": "object",
         "properties": {
@@ -2891,6 +2989,48 @@
         },
         "required": [
           "version"
+        ]
+      },
+      "CategoryDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "VENUE",
+              "PHOTO_VIDEO",
+              "CATERING",
+              "ENTERTAINMENT",
+              "GENERAL"
+            ]
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "description": "Only keys and values defined by GET /presence/detail-types are accepted. Omit unanswered fields. Sending an empty object clears the values."
+          }
+        },
+        "required": [
+          "type",
+          "values"
         ]
       },
       "SocialLinkDto": {
@@ -2942,6 +3082,9 @@
       "PresenceResponseDto": {
         "type": "object",
         "properties": {
+          "categoryDetails": {
+            "$ref": "#/components/schemas/CategoryDetailsDto"
+          },
           "showEmail": {
             "type": "boolean"
           },
@@ -3045,6 +3188,9 @@
       "PresenceDto": {
         "type": "object",
         "properties": {
+          "categoryDetails": {
+            "$ref": "#/components/schemas/CategoryDetailsDto"
+          },
           "showEmail": {
             "type": "boolean"
           },
@@ -3279,6 +3425,9 @@
       "PublicPresenceDto": {
         "type": "object",
         "properties": {
+          "categoryDetails": {
+            "$ref": "#/components/schemas/CategoryDetailsDto"
+          },
           "slug": {
             "type": "string"
           },
@@ -3354,6 +3503,7 @@
           }
         },
         "required": [
+          "categoryDetails",
           "slug",
           "description",
           "supplier",

@@ -1,3 +1,4 @@
+import { CategoryDetailsDto } from './category-details.dto.js';
 import { PublicSupplierDto } from '../../../core/suppliers/suppliers.dto.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
@@ -40,6 +41,11 @@ export class OpeningHourDto {
   closes?: string;
 }
 export class PresenceDto {
+  @ApiPropertyOptional({ type: CategoryDetailsDto })
+  @ValidateIf((_, v) => v !== undefined)
+  @ValidateNested()
+  @Type(() => CategoryDetailsDto)
+  categoryDetails?: CategoryDetailsDto;
   @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsBoolean() showEmail?: boolean;
   @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsBoolean() showPhone?: boolean;
   @ApiProperty()
@@ -100,6 +106,7 @@ export class PresenceResponseDto extends PresenceDto {
 }
 
 export class PublicPresenceDto {
+  @ApiProperty({ type: CategoryDetailsDto }) categoryDetails!: CategoryDetailsDto;
   @ApiProperty() slug!: string;
   @ApiProperty() description!: string;
   @ApiProperty({ type: PublicSupplierDto }) supplier!: PublicSupplierDto;

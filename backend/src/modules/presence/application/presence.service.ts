@@ -143,6 +143,7 @@ export class PresenceService implements PresenceQueries {
       sections,
     } = profile;
     return {
+      categoryDetails: profile.categoryDetails,
       slug: profile.slug,
       description: profile.description,
       supplier,

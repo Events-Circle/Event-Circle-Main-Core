@@ -206,6 +206,55 @@ test('profile readiness, safe social links, logo ownership, normalization and pu
     }),
   ).toBe(count);
 });
+test('category details validate, persist, preserve omitted values and publish only with the profile', async () => {
+  const schemas = (await api().get('/api/v1/presence/detail-types').expect(200)).body;
+  expect(schemas.map((s) => s.id)).toEqual(['VENUE', 'PHOTO_VIDEO', 'CATERING', 'ENTERTAINMENT', 'GENERAL']);
+  const save = async (details, version) => {
+    const p = await current();
+    return api()
+      .put('/api/v1/presence/profile')
+      .set(auth())
+      .send({
+        slug: p.slug,
+        description: p.description,
+        published: p.published,
+        version: version ?? p.version,
+        ...(details === undefined ? {} : { categoryDetails: details }),
+      });
+  };
+  const details = { type: 'VENUE', values: { seatedCapacity: 120, parking: false, spaceType: 'Outdoor' } };
+  const initial = await current();
+  expect((await save(details)).status).toBe(200);
+  expect((await current()).categoryDetails).toEqual(details);
+  expect((await api().get(`/api/v1/presence/public/${slug}`).expect(200)).body.categoryDetails).toEqual(
+    details,
+  );
+  expect((await save(undefined)).status).toBe(200);
+  expect((await current()).categoryDetails).toEqual(details);
+  expect((await save(details, initial.version)).status).toBe(409);
+  for (const invalid of [
+    null,
+    [],
+    { type: 'UNKNOWN', values: {} },
+    { type: 'VENUE', values: { deliveryDays: 2 } },
+    { type: 'VENUE', values: { seatedCapacity: -1 } },
+    { type: 'VENUE', values: { seatedCapacity: 2.5 } },
+    { type: 'VENUE', values: { parking: 'yes' } },
+    { type: 'VENUE', values: { parking: null } },
+    { type: 'CATERING', values: { minimumGuests: 100, maximumGuests: 20 } },
+    { type: 'CATERING', values: { dietaryOptions: ['Vegan', 'Vegan'] } },
+    { type: 'GENERAL', values: { specialties: 'x'.repeat(501) } },
+  ]) {
+    expect((await save(invalid)).status).toBe(400);
+  }
+  expect((await current()).categoryDetails).toEqual(details);
+  const switched = { type: 'ENTERTAINMENT', values: { setupMinutes: 0, equipmentIncluded: false } };
+  expect((await save(switched)).status).toBe(200);
+  expect((await current()).categoryDetails).toEqual(switched);
+  expect((await save({ type: 'GENERAL', values: {} })).status).toBe(200);
+  expect((await current()).categoryDetails.values).toEqual({});
+});
+
 test('create, publish, public aggregate, private drafts and inquiry handoff form a complete backend journey', async () => {
   listing = (
     await api()
