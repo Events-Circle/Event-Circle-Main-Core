@@ -48,13 +48,16 @@ export class PresenceDto {
   categoryDetails?: CategoryDetailsDto;
   @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsBoolean() showEmail?: boolean;
   @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsBoolean() showPhone?: boolean;
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Omit to create a private draft or preserve the current address. Choose before publishing.',
+  })
+  @ValidateIf((_, v) => v !== undefined)
   @IsString()
   @MinLength(3)
   @MaxLength(80)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
-  slug!: string;
+  slug?: string;
   @ApiProperty() @Trim() @IsString() @MaxLength(4000) description!: string;
   @ApiProperty() @IsBoolean() published!: boolean;
   @ApiPropertyOptional()
@@ -99,6 +102,8 @@ export class PresenceDto {
   @ApiPropertyOptional() @ValidateIf((_, v) => v !== undefined) @IsInt() @Min(1) version?: number;
 }
 export class PresenceResponseDto extends PresenceDto {
+  @ApiProperty({ required: true }) declare slug: string;
+  @ApiProperty() pageAddressConfirmed!: boolean;
   @ApiProperty() id!: string;
   @ApiProperty() supplierId!: string;
   @ApiProperty({ required: true }) declare version: number;

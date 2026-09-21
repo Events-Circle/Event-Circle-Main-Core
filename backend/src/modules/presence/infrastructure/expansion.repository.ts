@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { validateCategoryDetails } from '../domain/category-details.js';
 import {
   Injectable,
@@ -115,7 +116,13 @@ export class PresenceRepository {
     return this.db.$transaction(async (tx) => {
       const old = await tx.presenceProfile.findUnique({ where: { supplierId } });
       if (old && data.version !== undefined && old.version !== data.version) throw new ConflictException();
-      const slug = policy(() => normalizeSlug(data.slug));
+      const slug =
+        data.slug === undefined
+          ? (old?.slug ?? `draft-${randomUUID()}`)
+          : policy(() => normalizeSlug(data.slug!));
+      // Echoing an internal draft address (e.g. an older client) does not confirm it.
+      const pageAddressConfirmed =
+        old?.pageAddressConfirmed === true || (data.slug !== undefined && data.slug !== old?.slug);
       const { version: _version, socialLinks, openingHours, categoryDetails, ...inputFields } = data;
       // DTO instances have undefined optional own-properties. They must not erase
       // previously saved values when evaluating a partial profile update.
@@ -132,7 +139,7 @@ export class PresenceRepository {
           ))
       )
         throw new BadRequestException();
-      const candidate = { ...old, ...fields, slug };
+      const candidate = { ...old, ...fields, slug, pageAddressConfirmed };
       await this.media.requireReady(
         org,
         [candidate.logoMediaId, candidate.coverMediaId].filter((id): id is string => !!id),
@@ -151,6 +158,7 @@ export class PresenceRepository {
         ...fields,
         ...(categoryDetails ? { categoryDetails: json(categoryDetails) } : {}),
         slug,
+        pageAddressConfirmed,
         ...(socialLinks ? { socialLinks: json(socialLinks) } : {}),
         ...(openingHours ? { openingHours: json(openingHours) } : {}),
         publishedAt: candidate.published ? (old?.publishedAt ?? new Date()) : null,

@@ -874,6 +874,7 @@ export interface components {
             categoryDetails?: components["schemas"]["CategoryDetailsDto"];
             showEmail?: boolean;
             showPhone?: boolean;
+            /** @description Omit to create a private draft or preserve the current address. Choose before publishing. */
             slug: string;
             description: string;
             published: boolean;
@@ -887,6 +888,7 @@ export interface components {
             openingHours?: components["schemas"]["OpeningHourDto"][];
             sections?: string[];
             version: number;
+            pageAddressConfirmed: boolean;
             id: string;
             supplierId: string;
             publishedAt: string | null;
@@ -901,7 +903,8 @@ export interface components {
             categoryDetails?: components["schemas"]["CategoryDetailsDto"];
             showEmail?: boolean;
             showPhone?: boolean;
-            slug: string;
+            /** @description Omit to create a private draft or preserve the current address. Choose before publishing. */
+            slug?: string;
             description: string;
             published: boolean;
             tagline?: string;

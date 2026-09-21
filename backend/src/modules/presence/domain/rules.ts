@@ -212,6 +212,7 @@ function succeeds(check: () => void): boolean {
 }
 export function profileReadiness(profile: {
   supplierExists: boolean;
+  pageAddressConfirmed?: boolean;
   slug: string;
   description: string;
   categoryActive: boolean;
@@ -221,9 +222,10 @@ export function profileReadiness(profile: {
     ['supplier', profile.supplierExists],
     [
       'slug',
-      succeeds(() => {
-        normalizeSlug(profile.slug);
-      }),
+      profile.pageAddressConfirmed !== false &&
+        succeeds(() => {
+          normalizeSlug(profile.slug);
+        }),
     ],
     ['description', !!profile.description.trim() && profile.description.length <= 4000],
     ['category', profile.categoryActive],

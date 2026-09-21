@@ -51,7 +51,6 @@ export class PresenceService implements PresenceQueries {
     if (!row) throw new NotFoundException();
     if (row.version !== version) {
       return this.repository.save(actor, org, supplier.id, {
-        slug: row.slug,
         description: row.description,
         published,
         version,
@@ -59,7 +58,6 @@ export class PresenceService implements PresenceQueries {
     }
     if (row.published === published) return row;
     return this.repository.save(actor, org, supplier.id, {
-      slug: row.slug,
       description: row.description,
       published,
       version,

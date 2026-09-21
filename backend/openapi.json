@@ -3092,7 +3092,8 @@
             "type": "boolean"
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "Omit to create a private draft or preserve the current address. Choose before publishing."
           },
           "description": {
             "type": "string"
@@ -3141,6 +3142,9 @@
           "version": {
             "type": "number"
           },
+          "pageAddressConfirmed": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
@@ -3157,6 +3161,7 @@
           "description",
           "published",
           "version",
+          "pageAddressConfirmed",
           "id",
           "supplierId",
           "publishedAt"
@@ -3198,7 +3203,8 @@
             "type": "boolean"
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "Omit to create a private draft or preserve the current address. Choose before publishing."
           },
           "description": {
             "type": "string"
@@ -3249,7 +3255,6 @@
           }
         },
         "required": [
-          "slug",
           "description",
           "published"
         ]

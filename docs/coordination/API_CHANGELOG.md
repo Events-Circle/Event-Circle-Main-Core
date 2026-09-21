@@ -41,3 +41,10 @@ Presence listing writes accept optional `priceUnit` (`EVENT`, `HOUR`, `PERSON`, 
 The additive migration leaves existing units unspecified, with empty inclusions/notes. Omitted new fields preserve existing values; explicit null clears the unit, [] clears inclusions, and an empty string clears the note. Quote/free modes clear the stored unit and reject an explicitly supplied non-null unit. Portfolio/gallery writes reject listing-only fields. Existing tenant checks, version conflicts, publication readiness, and public visibility remain authoritative. These are advertised prices, not checkout or booking functionality.
 
 Validation: all 44 backend tests pass, including migrations, ordered inclusion normalization, bounds, rejection of duplicate/invalid values, old-client preservation, explicit clearing, stale versions and public responses.
+
+## 2026-09-21 — Presence private setup before choosing an address
+
+- Presence profile writes accept an omitted `slug`: create a private draft with a generated internal address, or preserve an existing address. Empty/null/invalid supplied addresses remain invalid.
+- Management responses add `pageAddressConfirmed`. Existing rows migrate to true. New omitted-address drafts are false; choosing a different valid address confirms it. Echoing an internal draft address from an older client does not confirm it.
+- Profile readiness and publication require an explicitly chosen address. Publish/unpublish operations preserve this state. Drafts can own portfolio/listing/gallery content and category details before choosing an address.
+- Apply additive migration `20260921100000_deferred_presence_address` before running the new API. No Core identity schema change; service-area editing uses the existing supplier API.

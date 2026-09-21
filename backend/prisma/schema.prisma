@@ -186,6 +186,7 @@ model PresenceProfile {
   supplierId     String     @unique @db.Uuid
   supplier       Supplier   @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   slug           String     @unique
+  pageAddressConfirmed Boolean @default(true)
   description    String     @default("")
   published      Boolean    @default(false)
   updatedAt      DateTime   @updatedAt

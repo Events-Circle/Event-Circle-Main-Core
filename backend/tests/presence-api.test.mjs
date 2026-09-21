@@ -618,3 +618,95 @@ test('Presence-only edition serves published content without an inquiry CTA; Cor
     }
   }
 });
+
+test('private profile creation defers the address and publishing requires an explicit choice', async () => {
+  const user = (
+    await api()
+      .post('/api/v1/core/auth/register')
+      .send({
+        email: `draft-${suffix}@example.test`,
+        displayName: 'Draft QA',
+        password: 'Testing long password 123!',
+      })
+      .expect(201)
+  ).body;
+  const business = (
+    await api()
+      .post('/api/v1/core/suppliers')
+      .set({ Authorization: `Bearer ${user.accessToken}` })
+      .send({
+        businessName: 'Draft studio',
+        category: 'Photography',
+        city: 'Beirut',
+        serviceAreas: [' Beirut ', 'Mount Lebanon'],
+      })
+      .expect(201)
+  ).body;
+  expect(business.serviceAreas).toEqual(['Beirut', 'Mount Lebanon']);
+  const headers = auth(user, business);
+  let profile = (
+    await api()
+      .put('/api/v1/presence/profile')
+      .set(headers)
+      .send({ description: '', published: false })
+      .expect(200)
+  ).body;
+  expect(profile.pageAddressConfirmed).toBe(false);
+  expect(profile.slug).toMatch(/^draft-/);
+  await api().get(`/api/v1/presence/public/${profile.slug}`).expect(404);
+  const readiness = (await api().get('/api/v1/presence/readiness').set(headers).expect(200)).body;
+  expect(readiness.missing).toContain('slug');
+  const blocked = await api()
+    .post('/api/v1/presence/profile/publish')
+    .set(headers)
+    .send({ version: profile.version })
+    .expect(422);
+  expect(blocked.body.details.missing).toContain('slug');
+  profile = (
+    await api()
+      .put('/api/v1/presence/profile')
+      .set(headers)
+      .send({
+        slug: profile.slug,
+        description: 'Updated private introduction',
+        published: false,
+        version: profile.version,
+      })
+      .expect(200)
+  ).body;
+  expect(profile.pageAddressConfirmed).toBe(false);
+  await api()
+    .post(path('portfolio'))
+    .set(headers)
+    .send({ title: 'First private project', media: [] })
+    .expect(201);
+  profile = (await api().get('/api/v1/presence/profile').set(headers).expect(200)).body;
+  for (const slug of ['', null, 'invalid address'])
+    await api()
+      .put('/api/v1/presence/profile')
+      .set(headers)
+      .send({ slug, description: '', published: false, version: profile.version })
+      .expect(400);
+  profile = (
+    await api()
+      .put('/api/v1/presence/profile')
+      .set(headers)
+      .send({ slug: `chosen-${suffix}`, description: 'Our work', published: false, version: profile.version })
+      .expect(200)
+  ).body;
+  expect(profile.pageAddressConfirmed).toBe(true);
+  const preserved = (
+    await api()
+      .put('/api/v1/presence/profile')
+      .set(headers)
+      .send({ description: 'Revised', published: false, version: profile.version })
+      .expect(200)
+  ).body;
+  expect(preserved.slug).toBe(profile.slug);
+  expect(preserved.pageAddressConfirmed).toBe(true);
+  await api()
+    .put('/api/v1/presence/profile')
+    .set(headers)
+    .send({ description: 'Stale', published: false, version: profile.version })
+    .expect(409);
+});
