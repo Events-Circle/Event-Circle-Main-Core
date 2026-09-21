@@ -1,5 +1,9 @@
 # Project status
 
+## Circle AI branch update — 2026-09-18
+
+Planning-only foundation authored; see ../circle-ai-handoff.md. Adds tenant-scoped requests, drafts, owner decisions and history. No generative provider or external execution, no live deployment yet. Presence frontend now exists separately; older statements below that it has not been created are historical.
+
 Presence & Portfolio image V1 backend is implemented on the feature branch: Core image processing/private storage adapter and catalogs, additive schema, profile and content APIs, publication, public aggregates/media/share and Leads inquiry handoff. Android and iOS JavaScript exports are verified. See `docs/presence-backend-handoff.md` and `docs/staging-setup.md` for acceptance evidence and remaining live-provider/device gates. The module frontend repo has not been created.
 
 The following is the earlier foundation audit record:

@@ -1,5 +1,9 @@
 # API changelog
 
+## Circle AI planning foundation
+
+Added authenticated /api/v1/circle-ai/brief and /plans, versioned edits and owner-only /plans/:id/decision. New circle-ai.read/write/approve permissions, circle-ai edition and private circle_ai_plans table. Approval is planning-only, never external execution. See docs/circle-ai-handoff.md.
+
 ## Presence image V1 expansion
 
 - Core media multipart upload and scoped reads; category/location catalogs; optional supplier catalog IDs and private contacts.

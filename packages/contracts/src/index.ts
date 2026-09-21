@@ -18,3 +18,4 @@ export const eventNames = {
   presenceUpdated: 'presence.profile.updated.v1',
 } as const;
 export * from './presence.js';
+export * from './circle-ai.js';

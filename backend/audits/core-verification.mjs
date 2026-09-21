@@ -337,7 +337,7 @@ try {
     assert.equal(modules.length, 8);
     assert.deepEqual(
       modules.filter((m) => m.implemented).map((m) => m.id),
-      ['presence', 'leads'],
+      ['presence', 'leads', 'circle-ai'],
     );
     for (const m of modules.filter((m) => !m.implemented)) {
       assert.equal(m.enabled, false);
@@ -354,7 +354,7 @@ try {
         JWT_PRIVATE_KEY_PATH: 'private.pem',
         JWT_PUBLIC_KEY_PATH: 'public.pem',
       };
-      assert.deepEqual(runtime(env).enabled, ['presence', 'leads']);
+      assert.deepEqual(runtime(env).enabled, ['presence', 'leads', 'circle-ai']);
       for (const override of [
         { ENABLED_MODULES: 'content' },
         { ENABLED_MODULES: 'leads,leads' },

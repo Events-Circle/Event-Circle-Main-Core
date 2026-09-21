@@ -1,3 +1,26 @@
+model CircleAiPlan {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  actorId        String       @db.Uuid
+  actor          User         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  requestId      String       @db.Uuid
+  kind           String
+  prompt         String
+  title          String
+  response       String
+  draft          String
+  blockedReason  String
+  status         String       @default("DRAFT")
+  version        Int          @default(1)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, requestId])
+  @@index([organizationId, createdAt, id])
+  @@map("circle_ai_plans")
+}
+
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/client"
@@ -9,6 +32,7 @@ datasource db {
 }
 
 model User {
+  circleAiPlans           CircleAiPlan[]
   id                      String         @id @default(uuid()) @db.Uuid
   email                   String         @unique
   passwordHash            String
@@ -115,12 +139,13 @@ enum MemberRole {
 }
 
 model Organization {
-  id          String       @id @default(uuid()) @db.Uuid
-  name        String
-  createdAt   DateTime     @default(now())
-  memberships Membership[]
-  supplier    Supplier?
-  media       CoreMedia[]
+  circleAiPlans CircleAiPlan[]
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  createdAt     DateTime       @default(now())
+  memberships   Membership[]
+  supplier      Supplier?
+  media         CoreMedia[]
 
   @@map("core_organizations")
 }
